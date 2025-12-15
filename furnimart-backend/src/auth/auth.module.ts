@@ -6,6 +6,8 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { jwtConstants } from './constants';
 import { User, UserSchema } from '../users/schemas/user.schema';
+import { JwtGuard } from './jwt.guard';
+import { RolesGuard } from './roles.guard';
 
 @Module({
   imports: [
@@ -16,7 +18,7 @@ import { User, UserSchema } from '../users/schemas/user.schema';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService],
-  exports: [JwtModule, MongooseModule],
+  providers: [AuthService, JwtGuard, RolesGuard],
+  exports: [JwtModule, MongooseModule, JwtGuard, RolesGuard],
 })
 export class AuthModule {}
