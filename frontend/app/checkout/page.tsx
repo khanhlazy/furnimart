@@ -8,6 +8,8 @@ import { orderService } from '@services/orderService';
 import { toast } from 'react-toastify';
 import Link from 'next/link';
 import { useState } from 'react';
+import Navbar from '@components/Navbar';
+import Footer from '@components/Footer';
 
 interface CheckoutForm {
   shippingAddress: string;
@@ -25,26 +27,34 @@ export default function CheckoutPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-500 mb-4">Vui lòng đăng nhập để tiếp tục</p>
-          <Link href="/auth/login" className="text-secondary hover:underline">
-            Đăng nhập ngay
-          </Link>
+      <div className="page-shell">
+        <Navbar />
+        <div className="flex-1 section-shell flex items-center justify-center">
+          <div className="empty-state">
+            <p className="text-gray-600 mb-4">Vui lòng đăng nhập để tiếp tục</p>
+            <Link href="/auth/login" className="inline-link">
+              Đăng nhập ngay
+            </Link>
+          </div>
         </div>
+        <Footer />
       </div>
     );
   }
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-500 mb-4">Giỏ hàng đang trống</p>
-          <Link href="/products" className="text-secondary hover:underline">
-            Quay lại mua sắm
-          </Link>
+      <div className="page-shell">
+        <Navbar />
+        <div className="flex-1 section-shell flex items-center justify-center">
+          <div className="empty-state">
+            <p className="text-gray-600 mb-4">Giỏ hàng đang trống</p>
+            <Link href="/products" className="inline-link">
+              Quay lại mua sắm
+            </Link>
+          </div>
         </div>
+        <Footer />
       </div>
     );
   }
@@ -77,26 +87,29 @@ export default function CheckoutPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <h1 className="text-2xl font-bold text-primary">FurniMart - Thanh toán</h1>
+    <div className="page-shell">
+      <Navbar />
+
+      <header className="hero-banner">
+        <div className="section-shell relative z-10">
+          <p className="pill mb-3 inline-flex">Thanh toán</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-white">FurniMart - Hoàn tất đặt hàng</h1>
+          <p className="text-gray-100/90">Điền thông tin giao hàng và phương thức thanh toán</p>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="section-shell py-10 flex-1">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Checkout Form */}
-          <div className="lg:col-span-2 bg-white rounded-lg shadow p-6">
+          <div className="lg:col-span-2 panel">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {/* Shipping Address */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Địa chỉ giao hàng</label>
+                <label className="form-label">Địa chỉ giao hàng</label>
                 <textarea
                   {...register('shippingAddress', { required: 'Địa chỉ là bắt buộc' })}
                   rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary"
+                  className="input-field"
                   placeholder="Nhập địa chỉ giao hàng đầy đủ"
                 />
                 {errors.shippingAddress && (
@@ -106,11 +119,11 @@ export default function CheckoutPage() {
 
               {/* Phone */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Số điện thoại</label>
+                <label className="form-label">Số điện thoại</label>
                 <input
                   {...register('phone', { required: 'Số điện thoại là bắt buộc' })}
                   type="tel"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary"
+                  className="input-field"
                   placeholder="0123456789"
                 />
                 {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone.message}</p>}
@@ -118,33 +131,22 @@ export default function CheckoutPage() {
 
               {/* Payment Method */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Phương thức thanh toán</label>
+                <label className="form-label">Phương thức thanh toán</label>
                 <div className="space-y-2">
-                  <label className="flex items-center">
+                  <label className="flex items-center gap-2">
                     <input
                       {...register('paymentMethod', { required: 'Chọn phương thức thanh toán' })}
                       type="radio"
                       value="cod"
-                      className="mr-2"
                     />
                     <span>Thanh toán khi nhận hàng (COD)</span>
                   </label>
-                  <label className="flex items-center">
-                    <input
-                      {...register('paymentMethod')}
-                      type="radio"
-                      value="stripe"
-                      className="mr-2"
-                    />
+                  <label className="flex items-center gap-2">
+                    <input {...register('paymentMethod')} type="radio" value="stripe" />
                     <span>Thẻ tín dụng (Stripe)</span>
                   </label>
-                  <label className="flex items-center">
-                    <input
-                      {...register('paymentMethod')}
-                      type="radio"
-                      value="momo"
-                      className="mr-2"
-                    />
+                  <label className="flex items-center gap-2">
+                    <input {...register('paymentMethod')} type="radio" value="momo" />
                     <span>MoMo</span>
                   </label>
                 </div>
@@ -155,11 +157,11 @@ export default function CheckoutPage() {
 
               {/* Notes */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Ghi chú (tùy chọn)</label>
+                <label className="form-label">Ghi chú (tùy chọn)</label>
                 <textarea
                   {...register('notes')}
                   rows={2}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary"
+                  className="input-field"
                   placeholder="Ghi chú thêm cho nhân viên giao hàng..."
                 />
               </div>
@@ -167,7 +169,7 @@ export default function CheckoutPage() {
               <button
                 type="submit"
                 disabled={isSubmitting || orderLoading}
-                className="w-full bg-secondary text-white py-3 rounded-lg hover:bg-yellow-600 disabled:opacity-50 font-semibold"
+                className="btn-primary w-full disabled:opacity-50"
               >
                 {isSubmitting || orderLoading ? 'Đang xử lý...' : 'Đặt hàng'}
               </button>
@@ -175,10 +177,13 @@ export default function CheckoutPage() {
           </div>
 
           {/* Order Summary */}
-          <div className="bg-white rounded-lg shadow p-6 h-fit">
-            <h2 className="text-xl font-bold text-primary mb-6">Tóm tắt đơn hàng</h2>
+          <div className="panel h-fit space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-primary">Tóm tắt đơn hàng</h2>
+              <span className="pill">{items.reduce((sum, item) => sum + item.quantity, 0)} sản phẩm</span>
+            </div>
 
-            <div className="space-y-4 mb-6 pb-6 border-b max-h-80 overflow-y-auto">
+            <div className="space-y-4 pb-4 border-b max-h-80 overflow-y-auto">
               {items.map((item) => (
                 <div key={item.productId} className="flex justify-between text-sm">
                   <span className="text-gray-600">
@@ -189,7 +194,7 @@ export default function CheckoutPage() {
               ))}
             </div>
 
-            <div className="space-y-2 mb-6">
+            <div className="space-y-2">
               <div className="flex justify-between text-gray-600">
                 <span>Tạm tính:</span>
                 <span>{getTotalPrice().toLocaleString('vi-VN')} VNĐ</span>
@@ -198,20 +203,22 @@ export default function CheckoutPage() {
                 <span>Phí vận chuyển:</span>
                 <span className="text-accent">Miễn phí</span>
               </div>
-              <div className="flex justify-between text-lg font-bold text-primary border-t pt-2">
-                <span>Tổng cộng:</span>
-                <span>{getTotalPrice().toLocaleString('vi-VN')} VNĐ</span>
-              </div>
             </div>
 
-            <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded">
-              <p>✓ Miễn phí vận chuyển</p>
-              <p>✓ Bảo hành chính hãng</p>
-              <p>✓ Hoàn tiền 100% nếu lỗi</p>
+            <div className="flex justify-between text-lg font-bold text-primary border-t pt-2">
+              <span>Tổng cộng:</span>
+              <span>{getTotalPrice().toLocaleString('vi-VN')} VNĐ</span>
             </div>
+          </div>
+
+          <div className="panel text-sm text-gray-700 bg-gradient-to-r from-blue-50 to-white">
+            <p>✓ Miễn phí vận chuyển</p>
+            <p>✓ Bảo hành chính hãng</p>
+            <p>✓ Hoàn tiền 100% nếu lỗi</p>
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

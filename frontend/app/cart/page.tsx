@@ -4,6 +4,8 @@ import { useCartStore } from '@store/cartStore';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FiTrash2, FiArrowLeft } from 'react-icons/fi';
+import Navbar from '@components/Navbar';
+import Footer from '@components/Footer';
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, clearCart, getTotalPrice } = useCartStore();
@@ -15,43 +17,49 @@ export default function CartPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <Link href="/products" className="flex items-center gap-2 text-secondary hover:text-primary">
+    <div className="page-shell">
+      <Navbar />
+
+      <header className="hero-banner">
+        <div className="section-shell relative z-10 flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <p className="pill mb-3 inline-flex">Giỏ hàng</p>
+            <h1 className="text-3xl font-bold text-white">Đơn hàng của bạn</h1>
+            <p className="text-gray-100/90">Kiểm tra lại sản phẩm trước khi thanh toán</p>
+          </div>
+          <Link href="/products" className="inline-flex items-center gap-2 text-white hover:text-white/90">
             <FiArrowLeft /> Tiếp tục mua sắm
           </Link>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="section-shell py-10 flex-1">
         {items.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-12 text-center">
-            <p className="text-gray-500 text-lg mb-4">Giỏ hàng của bạn đang trống</p>
-            <Link href="/products" className="text-secondary hover:underline">
+          <div className="empty-state">
+            <p className="text-gray-600 text-lg mb-4">Giỏ hàng của bạn đang trống</p>
+            <Link href="/products" className="inline-link">
               Quay lại mua sắm
             </Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Cart Items */}
-            <div className="lg:col-span-2 bg-white rounded-lg shadow overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-gray-100 border-b">
+            <div className="lg:col-span-2 panel overflow-hidden">
+              <table className="w-full table-styled">
+                <thead>
                   <tr>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Sản phẩm</th>
-                    <th className="px-6 py-3 text-center text-sm font-semibold text-gray-900">Giá</th>
-                    <th className="px-6 py-3 text-center text-sm font-semibold text-gray-900">Số lượng</th>
-                    <th className="px-6 py-3 text-right text-sm font-semibold text-gray-900">Thành tiền</th>
-                    <th className="px-6 py-3 text-center"></th>
+                    <th>Sản phẩm</th>
+                    <th className="text-center">Giá</th>
+                    <th className="text-center">Số lượng</th>
+                    <th className="text-right">Thành tiền</th>
+                    <th className="text-center"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {items.map((item) => (
-                    <tr key={item.productId} className="border-b hover:bg-gray-50">
-                      <td className="px-6 py-4">
-                        <div className="flex gap-4">
+                    <tr key={item.productId}>
+                      <td className="py-4">
+                        <div className="flex gap-4 items-center">
                           {item.image && (
                             <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded" />
                           )}
@@ -61,11 +69,11 @@ export default function CartPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-center">
+                      <td className="text-center">
                         {item.price.toLocaleString('vi-VN')} VNĐ
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center justify-center border border-gray-300 rounded w-fit mx-auto">
+                      <td>
+                        <div className="flex items-center justify-center border border-gray-200 rounded-lg w-fit mx-auto bg-white overflow-hidden">
                           <button
                             onClick={() => updateQuantity(item.productId, Math.max(1, item.quantity - 1))}
                             className="px-2 py-1 text-gray-600 hover:bg-gray-100"
@@ -76,7 +84,7 @@ export default function CartPage() {
                             type="number"
                             value={item.quantity}
                             onChange={(e) => updateQuantity(item.productId, parseInt(e.target.value) || 1)}
-                            className="w-12 text-center border-l border-r border-gray-300"
+                            className="w-12 text-center border-x border-gray-200"
                           />
                           <button
                             onClick={() => updateQuantity(item.productId, item.quantity + 1)}
@@ -86,10 +94,10 @@ export default function CartPage() {
                           </button>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-right font-semibold">
+                      <td className="text-right font-semibold">
                         {(item.price * item.quantity).toLocaleString('vi-VN')} VNĐ
                       </td>
-                      <td className="px-6 py-4 text-center">
+                      <td className="text-center">
                         <button
                           onClick={() => removeItem(item.productId)}
                           className="text-red-500 hover:text-red-700"
@@ -104,46 +112,39 @@ export default function CartPage() {
             </div>
 
             {/* Summary */}
-            <div className="bg-white rounded-lg shadow p-6 h-fit">
-              <h2 className="text-xl font-bold text-primary mb-6">Tóm tắt đơn hàng</h2>
+            <div className="panel h-fit space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-primary">Tóm tắt đơn hàng</h2>
+                <span className="pill">{items.reduce((sum, item) => sum + item.quantity, 0)} sản phẩm</span>
+              </div>
 
-              <div className="space-y-4 mb-6 pb-6 border-b">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Số lượng:</span>
-                  <span className="font-semibold">{items.reduce((sum, item) => sum + item.quantity, 0)}</span>
+              <div className="space-y-3 pb-4 border-b">
+                <div className="flex justify-between text-gray-600">
+                  <span>Tạm tính:</span>
+                  <span className="font-semibold text-gray-900">{getTotalPrice().toLocaleString('vi-VN')} VNĐ</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Tạm tính:</span>
-                  <span className="font-semibold">{getTotalPrice().toLocaleString('vi-VN')} VNĐ</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Phí vận chuyển:</span>
-                  <span className="font-semibold text-accent">Miễn phí</span>
+                <div className="flex justify-between text-gray-600">
+                  <span>Phí vận chuyển:</span>
+                  <span className="text-accent font-semibold">Miễn phí</span>
                 </div>
               </div>
 
-              <div className="flex justify-between text-lg font-bold text-primary mb-6">
+              <div className="flex justify-between text-lg font-bold text-primary">
                 <span>Tổng cộng:</span>
                 <span>{getTotalPrice().toLocaleString('vi-VN')} VNĐ</span>
               </div>
 
-              <div className="space-y-2">
-                <button
-                  onClick={handleCheckout}
-                  className="w-full bg-secondary text-white py-3 rounded-lg hover:bg-yellow-600 transition font-semibold"
-                >
+              <div className="space-y-3">
+                <button onClick={handleCheckout} className="btn-primary w-full">
                   Tiến hành thanh toán
                 </button>
                 <button
                   onClick={() => router.push('/products')}
-                  className="w-full border border-secondary text-secondary py-3 rounded-lg hover:bg-secondary hover:text-white transition font-semibold"
+                  className="btn-secondary w-full"
                 >
                   Tiếp tục mua sắm
                 </button>
-                <button
-                  onClick={clearCart}
-                  className="w-full text-red-500 hover:text-red-700 py-2"
-                >
+                <button onClick={clearCart} className="w-full text-red-500 hover:text-red-700 font-semibold">
                   Xóa giỏ hàng
                 </button>
               </div>
@@ -151,6 +152,8 @@ export default function CartPage() {
           </div>
         )}
       </div>
+
+      <Footer />
     </div>
   );
 }
