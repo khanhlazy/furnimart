@@ -11,7 +11,7 @@ export class ShippingTracking {
   @Prop({ type: MongooseSchema.Types.ObjectId, required: true })
   shipperId!: string;
 
-  @Prop({ default: 'pending', enum: ['pending', 'in_transit', 'delivered'] })
+  @Prop({ default: 'pending', enum: ['pending', 'assigned', 'picked_up', 'in_transit', 'out_for_delivery', 'delivered', 'failed', 'returned'] })
   status!: string;
 
   @Prop()
@@ -28,6 +28,14 @@ export class ShippingTracking {
 
   @Prop()
   deliveryNote?: string;
+
+  @Prop({ type: Array, default: [] })
+  trackingHistory!: Array<{
+    status: string;
+    location?: string;
+    note?: string;
+    timestamp: Date;
+  }>;
 }
 
 export const ShippingTrackingSchema = SchemaFactory.createForClass(ShippingTracking);

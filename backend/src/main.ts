@@ -16,8 +16,12 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   // Enable CORS
+  const corsOrigins = process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(',')
+    : ['http://localhost:3000', 'http://localhost:3001'];
+  
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://localhost:3001'],
+    origin: corsOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -63,6 +67,8 @@ async function bootstrap() {
   await app.listen(PORT);
 
   const env = process.env.NODE_ENV || 'development';
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  
   console.log(`
 ╔═══════════════════════════════════════╗
 ║   🚀 FurniMart Backend Server 🚀      ║
@@ -70,9 +76,9 @@ async function bootstrap() {
 ║ Environment: ${env.padEnd(27)}║
 ║ Port: ${PORT.toString().padEnd(32)}║
 ║ URL: http://localhost:${PORT.toString().padEnd(26)}║
-║ Health: /health ${' '.repeat(24)}║
+║ Health: /api/health ${' '.repeat(22)}║
 ║ Swagger: /api/docs ${' '.repeat(18)}║
-║ CORS: http://localhost:3000 ${' '.repeat(12)}║
+║ CORS: ${frontendUrl.padEnd(30)}║
 ╚═══════════════════════════════════════╝
   `);
 }

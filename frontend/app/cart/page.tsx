@@ -3,7 +3,7 @@
 import { useCartStore } from '@store/cartStore';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { FiTrash2, FiArrowLeft } from 'react-icons/fi';
+import { FiTrash2, FiArrowLeft, FiShoppingCart } from 'react-icons/fi';
 import Navbar from '@components/Navbar';
 import Footer from '@components/Footer';
 
@@ -36,9 +36,13 @@ export default function CartPage() {
       <div className="section-shell py-10 flex-1">
         {items.length === 0 ? (
           <div className="empty-state">
-            <p className="text-gray-600 text-lg mb-4">Giỏ hàng của bạn đang trống</p>
-            <Link href="/products" className="inline-link">
-              Quay lại mua sắm
+            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <FiShoppingCart size={48} className="text-gray-400" />
+            </div>
+            <p className="text-gray-600 text-xl font-semibold mb-2">Giỏ hàng của bạn đang trống</p>
+            <p className="text-gray-500 mb-6">Hãy thêm sản phẩm vào giỏ hàng để tiếp tục mua sắm</p>
+            <Link href="/products" className="btn-primary inline-flex items-center gap-2">
+              <FiShoppingCart /> Bắt đầu mua sắm
             </Link>
           </div>
         ) : (
@@ -59,18 +63,20 @@ export default function CartPage() {
                   {items.map((item) => (
                     <tr key={item.productId}>
                       <td className="py-4">
-                        <div className="flex gap-4 items-center">
-                          {item.image && (
-                            <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded" />
+                        <Link href={`/products/${item.productId}`} className="flex gap-4 items-center hover:opacity-80 transition">
+                          {item.image ? (
+                            <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-lg shadow-md" />
+                          ) : (
+                            <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">🛋️</div>
                           )}
                           <div>
                             <p className="font-semibold text-gray-900">{item.name}</p>
-                            <p className="text-sm text-gray-500">Mã: {item.productId}</p>
+                            <p className="text-xs text-gray-500">#{item.productId.slice(-8)}</p>
                           </div>
-                        </div>
+                        </Link>
                       </td>
                       <td className="text-center">
-                        {item.price.toLocaleString('vi-VN')} VNĐ
+                        {(item.price || 0).toLocaleString('vi-VN')} VNĐ
                       </td>
                       <td>
                         <div className="flex items-center justify-center border border-gray-200 rounded-lg w-fit mx-auto bg-white overflow-hidden">
@@ -95,7 +101,7 @@ export default function CartPage() {
                         </div>
                       </td>
                       <td className="text-right font-semibold">
-                        {(item.price * item.quantity).toLocaleString('vi-VN')} VNĐ
+                        {((item.price || 0) * item.quantity).toLocaleString('vi-VN')} VNĐ
                       </td>
                       <td className="text-center">
                         <button

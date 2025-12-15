@@ -2,17 +2,14 @@ import apiClient from './api';
 
 export const authService = {
   register: async (data: any) => {
-    const response = await apiClient.post('/auth/register', data);
-    return response;
+    return apiClient.post('/auth/register', data) as Promise<any>;
   },
 
   login: async (data: any) => {
-    const response = await apiClient.post('/auth/login', data);
-    return response;
+    return apiClient.post('/auth/login', data) as Promise<any>;
   },
 
   getMe: async () => {
-    const response = await apiClient.post('/auth/me', {});
-    return response;
+    return apiClient.post('/auth/me', {}) as Promise<any>;
   },
 };

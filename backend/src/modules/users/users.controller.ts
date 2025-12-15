@@ -22,6 +22,14 @@ export class UsersController {
     return this.formatUserResponse(user);
   }
 
+  @Get()
+  @Roles('admin', 'manager')
+  @UseGuards(RolesGuard)
+  async findAll() {
+    const users = await this.usersService.findAll();
+    return users.map((u) => this.formatUserResponse(u));
+  }
+
   @Get(':id')
   async findById(@Param('id') id: string) {
     const user = await this.usersService.findById(id);
@@ -29,14 +37,6 @@ export class UsersController {
       throw new NotFoundException('User not found');
     }
     return this.formatUserResponse(user);
-  }
-
-  @Get()
-  @Roles('admin', 'manager')
-  @UseGuards(RolesGuard)
-  async findAll() {
-    const users = await this.usersService.findAll();
-    return users.map((u) => this.formatUserResponse(u));
   }
 
   @Put(':id')

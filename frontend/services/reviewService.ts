@@ -1,28 +1,14 @@
+import { createBaseService } from './baseService';
 import apiClient from './api';
 
+const baseService = createBaseService('reviews');
+
 export const reviewService = {
-  create: async (data: any) => {
-    const response = await apiClient.post('/reviews', data);
-    return response;
-  },
-
+  ...baseService,
   getByProduct: async (productId: string) => {
-    const response = await apiClient.get(`/reviews/product/${productId}`);
-    return response;
+    return apiClient.get(`/reviews/product/${productId}`) as Promise<any>;
   },
-
   getMyReviews: async () => {
-    const response = await apiClient.get('/reviews/my-reviews');
-    return response;
-  },
-
-  update: async (id: string, data: any) => {
-    const response = await apiClient.put(`/reviews/${id}`, data);
-    return response;
-  },
-
-  delete: async (id: string) => {
-    const response = await apiClient.delete(`/reviews/${id}`);
-    return response;
+    return apiClient.get('/reviews/my-reviews') as Promise<any>;
   },
 };

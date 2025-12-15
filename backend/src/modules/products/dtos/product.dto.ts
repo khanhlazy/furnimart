@@ -1,4 +1,27 @@
-import { IsString, IsNumber, IsArray, IsOptional, Min } from 'class-validator';
+import { IsString, IsNumber, IsArray, IsOptional, Min, IsObject, IsBoolean, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+
+export class DimensionsDto {
+  @IsOptional()
+  @IsNumber()
+  length?: number;
+
+  @IsOptional()
+  @IsNumber()
+  width?: number;
+
+  @IsOptional()
+  @IsNumber()
+  height?: number;
+
+  @IsOptional()
+  @IsNumber()
+  weight?: number;
+
+  @IsOptional()
+  @IsString()
+  unit?: string;
+}
 
 export class CreateProductDto {
   @IsString()
@@ -20,15 +43,39 @@ export class CreateProductDto {
   stock!: number;
 
   @IsString()
+  categoryId!: string;
+
+  @IsString()
   category!: string;
 
   @IsOptional()
   @IsArray()
+  @IsString({ each: true })
+  materials?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  colors?: string[];
+
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => DimensionsDto)
+  dimensions?: DimensionsDto;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
   images?: string[];
 
   @IsOptional()
   @IsString()
   model3d?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isFeatured?: boolean;
 }
 
 export class UpdateProductDto {
@@ -46,9 +93,50 @@ export class UpdateProductDto {
 
   @IsOptional()
   @IsNumber()
+  discount?: number;
+
+  @IsOptional()
+  @IsNumber()
   stock?: number;
 
   @IsOptional()
+  @IsString()
+  categoryId?: string;
+
+  @IsOptional()
+  @IsString()
+  category?: string;
+
+  @IsOptional()
   @IsArray()
+  @IsString({ each: true })
+  materials?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  colors?: string[];
+
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => DimensionsDto)
+  dimensions?: DimensionsDto;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
   images?: string[];
+
+  @IsOptional()
+  @IsString()
+  model3d?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  isFeatured?: boolean;
 }

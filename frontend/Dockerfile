@@ -3,14 +3,19 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Copy package files
 COPY package*.json ./
 
-RUN npm ci
+# Install dependencies
+RUN npm ci --legacy-peer-deps
 
+# Copy source code
 COPY . .
 
+# Disable Next.js telemetry
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Build application
 RUN npm run build
 
 # Production stage
@@ -22,9 +27,12 @@ RUN apk add --no-cache dumb-init
 
 COPY package*.json ./
 
-RUN npm ci --only=production && npm cache clean --force
+# Install only production dependencies
+RUN npm ci --only=production --legacy-peer-deps && \
+    npm cache clean --force
 
-COPY --from=builder /app/public ./public
+# Copy built application from builder stage
+# Standalone mode already includes public folder
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 

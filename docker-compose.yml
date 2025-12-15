@@ -1,10 +1,8 @@
-version: '3.8'
-
 services:
   mongodb:
     image: mongo:7.0
     container_name: furnimart-mongodb
-    restart: always
+    restart: unless-stopped
     ports:
       - '27017:27017'
     environment:
@@ -15,27 +13,36 @@ services:
       - mongodb_data:/data/db
     networks:
       - furnimart-network
+    healthcheck:
+      test: ['CMD', 'mongosh', '--eval', 'db.adminCommand("ping")']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      args:
+        NODE_ENV: production
     container_name: furnimart-backend
-    restart: always
+    restart: unless-stopped
     ports:
       - '3001:3001'
     environment:
       PORT: 3001
       MONGODB_URI: mongodb://admin:admin123@mongodb:27017/furnimart?authSource=admin
-      JWT_SECRET: furnimart-secret-key-2024
-      FRONTEND_URL: http://localhost:3000
+      JWT_SECRET: ${JWT_SECRET:-furnimart-secret-key-2024}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
       NODE_ENV: production
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
     networks:
       - furnimart-network
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:3001/api/docs']
+      test: ['CMD', 'node', '-e', "require('http').get('http://localhost:3001/api/docs', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -45,18 +52,21 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001/api}
     container_name: furnimart-frontend
-    restart: always
+    restart: unless-stopped
     ports:
       - '3000:3000'
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:3001/api
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001/api}
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     networks:
       - furnimart-network
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:3000']
+      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://localhost:3000']
       interval: 30s
       timeout: 10s
       retries: 3

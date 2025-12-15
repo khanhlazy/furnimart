@@ -22,6 +22,8 @@ export class AppController {
     return {
       status: 'UP',
       timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      environment: process.env.NODE_ENV || 'development',
       message: '✅ FurniMart Backend is running',
     };
   }

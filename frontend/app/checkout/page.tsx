@@ -7,7 +7,7 @@ import { useAuthStore } from '@store/authStore';
 import { orderService } from '@services/orderService';
 import { toast } from 'react-toastify';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '@components/Navbar';
 import Footer from '@components/Footer';
 
@@ -21,27 +21,34 @@ interface CheckoutForm {
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, getTotalPrice, clearCart } = useCartStore();
-  const { user } = useAuthStore();
+  const { user, hasHydrated } = useAuthStore();
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<CheckoutForm>();
   const [orderLoading, setOrderLoading] = useState(false);
 
-  if (!user) {
+  // Wait for hydration before checking auth
+  useEffect(() => {
+    if (hasHydrated && !user && typeof window !== 'undefined') {
+      router.push('/auth/login?redirect=/checkout');
+    }
+  }, [user, hasHydrated, router]);
+
+  // Show loading while hydrating
+  if (!hasHydrated) {
     return (
       <div className="page-shell">
         <Navbar />
         <div className="flex-1 section-shell flex items-center justify-center">
-          <div className="empty-state">
-            <p className="text-gray-600 mb-4">Vui lòng đăng nhập để tiếp tục</p>
-            <Link href="/auth/login" className="inline-link">
-              Đăng nhập ngay
-            </Link>
-          </div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondary"></div>
         </div>
         <Footer />
       </div>
     );
   }
 
+  if (!user) {
+    return null;
+  }
+  
   if (items.length === 0) {
     return (
       <div className="page-shell">
@@ -61,6 +68,34 @@ export default function CheckoutPage() {
 
   const onSubmit = async (data: CheckoutForm) => {
     try {
+      // Verify user is authenticated before submitting
+      if (!user) {
+        toast.error('Vui lòng đăng nhập để tiếp tục');
+        router.push('/auth/login?redirect=/checkout');
+        return;
+      }
+
+      // Verify token exists - check both store and cookies
+      const { token } = useAuthStore.getState();
+      let authToken = token;
+      
+      // Fallback to cookie if store token is missing
+      if (!authToken && typeof document !== 'undefined') {
+        const cookies = document.cookie.split(';');
+        const tokenCookie = cookies.find(cookie => cookie.trim().startsWith('auth-token='));
+        if (tokenCookie) {
+          authToken = tokenCookie.trim().substring('auth-token='.length);
+        }
+      }
+      
+      if (!authToken) {
+        console.error('❌ No token found in store or cookies');
+        toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại');
+        router.push('/auth/login?redirect=/checkout');
+        return;
+      }
+
+      console.log('✅ Token found, proceeding with checkout');
       setOrderLoading(true);
       const orderData = {
         items: items.map((item) => ({
@@ -79,8 +114,18 @@ export default function CheckoutPage() {
       toast.success('Đặt hàng thành công!');
       clearCart();
       router.push('/orders');
-    } catch (error) {
-      toast.error('Đặt hàng thất bại');
+    } catch (error: any) {
+      console.error('Checkout error:', error);
+      
+      // Handle 401 specifically - don't show duplicate toast
+      if (error?.response?.status === 401) {
+        // Toast will be shown by API interceptor, just redirect
+        router.push('/auth/login?redirect=/checkout');
+        return;
+      }
+      
+      const errorMessage = error?.response?.data?.message || error?.message || 'Đặt hàng thất bại';
+      toast.error(errorMessage);
     } finally {
       setOrderLoading(false);
     }
@@ -177,7 +222,7 @@ export default function CheckoutPage() {
           </div>
 
           {/* Order Summary */}
-          <div className="panel h-fit space-y-4">
+          <div className="panel h-fit space-y-4 sticky top-24 bg-gradient-to-br from-white to-gray-50/50">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-primary">Tóm tắt đơn hàng</h2>
               <span className="pill">{items.reduce((sum, item) => sum + item.quantity, 0)} sản phẩm</span>
@@ -189,7 +234,7 @@ export default function CheckoutPage() {
                   <span className="text-gray-600">
                     {item.name} <span className="text-gray-500">x{item.quantity}</span>
                   </span>
-                  <span className="font-semibold">{(item.price * item.quantity).toLocaleString('vi-VN')} VNĐ</span>
+                  <span className="font-semibold">{((item.price || 0) * item.quantity).toLocaleString('vi-VN')} VNĐ</span>
                 </div>
               ))}
             </div>

@@ -15,7 +15,7 @@ export class ReviewsController {
   @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Tạo đánh giá mới' })
   async create(@CurrentUser('userId') userId: string, @Body() createReviewDto: CreateReviewDto) {
-    return this.reviewsService.create(userId, createReviewDto);
+    return this.reviewsService.createReview(userId, createReviewDto);
   }
 
   @Get('product/:productId')

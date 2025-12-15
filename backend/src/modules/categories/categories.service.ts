@@ -1,0 +1,54 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Category, CategoryDocument } from './schemas/category.schema';
+import { CreateCategoryDto, UpdateCategoryDto } from './dtos/category.dto';
+
+@Injectable()
+export class CategoriesService {
+  constructor(
+    @InjectModel(Category.name) private categoryModel: Model<CategoryDocument>,
+  ) {}
+
+  async create(createCategoryDto: CreateCategoryDto): Promise<CategoryDocument> {
+    return this.categoryModel.create(createCategoryDto);
+  }
+
+  async findAll(includeInactive = false): Promise<CategoryDocument[]> {
+    const query = includeInactive ? {} : { isActive: true };
+    return this.categoryModel.find(query).sort({ sortOrder: 1, name: 1 }).exec();
+  }
+
+  async findById(id: string): Promise<CategoryDocument> {
+    const category = await this.categoryModel.findById(id).exec();
+    if (!category) {
+      throw new NotFoundException('Danh mục không tồn tại');
+    }
+    return category;
+  }
+
+  async findBySlug(slug: string): Promise<CategoryDocument> {
+    const category = await this.categoryModel.findOne({ slug }).exec();
+    if (!category) {
+      throw new NotFoundException('Danh mục không tồn tại');
+    }
+    return category;
+  }
+
+  async findByParent(parentId?: string): Promise<CategoryDocument[]> {
+    const query = parentId ? { parentId, isActive: true } : { $or: [{ parentId: null }, { parentId: { $exists: false } }], isActive: true };
+    return this.categoryModel.find(query).sort({ sortOrder: 1, name: 1 }).exec();
+  }
+
+  async update(id: string, updateCategoryDto: UpdateCategoryDto): Promise<CategoryDocument> {
+    const category = await this.findById(id);
+    Object.assign(category, updateCategoryDto);
+    return category.save();
+  }
+
+  async delete(id: string): Promise<void> {
+    const category = await this.findById(id);
+    await this.categoryModel.deleteOne({ _id: id }).exec();
+  }
+}
+

@@ -32,8 +32,25 @@ export const useAuthStore = create<AuthStore>()(
       user: null,
       isLoading: false,
       hasHydrated: false,
-      login: (token: string, user: User) => set({ token, user }),
-      logout: () => set({ token: null, user: null }),
+      login: (token: string, user: User) => {
+        set({ token, user, hasHydrated: true });
+        // Set cookie for middleware to read (since middleware can't access localStorage)
+        if (typeof window !== 'undefined') {
+          // Use secure cookies with longer expiration
+          const maxAge = 60 * 60 * 24 * 30; // 30 days
+          document.cookie = `auth-token=${token}; path=/; max-age=${maxAge}; SameSite=Lax`;
+          document.cookie = `auth-user=${encodeURIComponent(JSON.stringify(user))}; path=/; max-age=${maxAge}; SameSite=Lax`;
+          console.log('✅ Login: Token and cookies set successfully');
+        }
+      },
+      logout: () => {
+        set({ token: null, user: null });
+        // Clear cookies
+        if (typeof window !== 'undefined') {
+          document.cookie = 'auth-token=; path=/; max-age=0';
+          document.cookie = 'auth-user=; path=/; max-age=0';
+        }
+      },
       setUser: (user: User) => set({ user }),
       setLoading: (isLoading: boolean) => set({ isLoading }),
       setHasHydrated: (hasHydrated: boolean) => set({ hasHydrated }),
@@ -49,9 +66,28 @@ export const useAuthStore = create<AuthStore>()(
     {
       name: 'auth-storage',
       skipHydration: true,
-      storage: createJSONStorage(() => (typeof window !== 'undefined' ? localStorage : undefined)),
+      storage: createJSONStorage(() => {
+        if (typeof window !== 'undefined') {
+          return localStorage;
+        }
+        // Return a no-op storage for SSR
+        return {
+          getItem: () => null,
+          setItem: () => {},
+          removeItem: () => {},
+        };
+      }),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
+        // Restore cookies from localStorage after rehydration
+        if (state && typeof window !== 'undefined') {
+          if (state.token && state.user) {
+            const maxAge = 60 * 60 * 24 * 30; // 30 days
+            document.cookie = `auth-token=${state.token}; path=/; max-age=${maxAge}; SameSite=Lax`;
+            document.cookie = `auth-user=${encodeURIComponent(JSON.stringify(state.user))}; path=/; max-age=${maxAge}; SameSite=Lax`;
+            console.log('✅ Rehydration: Cookies restored from localStorage');
+          }
+        }
       },
     },
   ),

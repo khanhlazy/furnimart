@@ -1,20 +1,15 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useQuery } from 'react-query';
+import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@store/authStore';
 import { orderService } from '@services/orderService';
 import Link from 'next/link';
 import { FiArrowRight } from 'react-icons/fi';
 import Navbar from '@components/Navbar';
 import Footer from '@components/Footer';
-
-interface Order {
-  _id: string;
-  totalPrice: number;
-  status: string;
-  createdAt: string;
-  items: Array<{ productName: string; quantity: number }>;
-}
+import { Order } from '@types';
 
 const statusLabels: Record<string, { label: string; color: string }> = {
   pending: { label: 'Chờ xác nhận', color: 'bg-yellow-100 text-yellow-800' },
@@ -25,13 +20,32 @@ const statusLabels: Record<string, { label: string; color: string }> = {
 };
 
 export default function OrdersPage() {
-  const { user } = useAuthStore();
+  const router = useRouter();
+  const { user, hasHydrated } = useAuthStore();
+
+  useEffect(() => {
+    if (hasHydrated && !user && typeof window !== 'undefined') {
+      router.push('/auth/login?redirect=/orders');
+    }
+  }, [user, hasHydrated, router]);
 
   const { data: orders, isLoading } = useQuery<Order[]>(
     ['myOrders'],
     () => orderService.getMyOrders(),
-    { enabled: !!user },
+    { enabled: !!user && hasHydrated },
   );
+
+  if (!hasHydrated) {
+    return (
+      <div className="page-shell">
+        <Navbar />
+        <div className="flex-1 section-shell flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondary"></div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   if (!user) {
     return (
@@ -111,7 +125,7 @@ export default function OrdersPage() {
 
                   <div className="text-right space-y-3">
                     <p className="text-2xl font-bold text-secondary">
-                      {order.totalPrice.toLocaleString('vi-VN')} VNĐ
+                      {(order.totalPrice || order.total || 0).toLocaleString('vi-VN')} VNĐ
                     </p>
                     <Link
                       href={`/orders/${order._id}`}

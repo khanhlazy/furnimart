@@ -1,8 +1,9 @@
-import { IsString, IsOptional } from 'class-validator';
+import { IsString, IsOptional, IsDateString } from 'class-validator';
 
 export class UpdateShippingDto {
+  @IsOptional()
   @IsString()
-  status!: string;
+  status?: string;
 
   @IsOptional()
   @IsString()
@@ -19,4 +20,8 @@ export class UpdateShippingDto {
   @IsOptional()
   @IsString()
   deliveryNote?: string;
+
+  @IsOptional()
+  @IsDateString()
+  estimatedDelivery?: string;
 }

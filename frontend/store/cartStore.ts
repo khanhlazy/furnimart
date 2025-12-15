@@ -65,7 +65,17 @@ export const useCartStore = create<CartStore>()(
     {
       name: 'cart-storage',
       skipHydration: true,
-      storage: createJSONStorage(() => (typeof window !== 'undefined' ? localStorage : undefined)),
+      storage: createJSONStorage(() => {
+        if (typeof window !== 'undefined') {
+          return localStorage;
+        }
+        // Return a no-op storage for SSR
+        return {
+          getItem: () => null,
+          setItem: () => {},
+          removeItem: () => {},
+        };
+      }),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
       },

@@ -4,24 +4,13 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import Navbar from '@components/Navbar';
 import Footer from '@components/Footer';
+import ProductCard from '@components/ProductCard';
 import { FiArrowRight, FiTruck, FiShield, FiStar } from 'react-icons/fi';
 import { useQuery } from 'react-query';
 import { productService } from '@services/productService';
+import { settingsService } from '@services/settingsService';
+import { Product } from '@types';
 
-interface Product {
-  _id: string;
-  name: string;
-  price: number;
-  discount?: number;
-  rating?: number;
-  reviewCount?: number;
-  images?: string[];
-}
-
-const getDiscountedPrice = (price: number, discount = 0) => {
-  if (!discount) return price;
-  return Math.round(price * (1 - discount / 100));
-};
 
 export default function Home() {
   useEffect(() => {
@@ -31,12 +20,21 @@ export default function Home() {
 
   const { data: products, isLoading, error } = useQuery<Product[]>(
     ['featured-products'],
-    () => productService.getAll({ limit: 6 }),
+    () => productService.getAll({ limit: 6, isFeatured: true }),
     {
       enabled: true,
       retry: 3,
       retryDelay: 1000,
     },
+  );
+
+  const { data: settings } = useQuery(
+    ['settings', 'theme'],
+    () => settingsService.getTheme(),
+    {
+      staleTime: 5 * 60 * 1000,
+      retry: 1,
+    }
   );
 
   return (
@@ -137,57 +135,13 @@ export default function Home() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {(products || []).map((product, idx) => (
-                <Link key={product._id} href={`/products/${product._id}`}>
-                  <div
-                    className="product-card animate-fade-in-up"
-                    style={{ animationDelay: `${idx * 80}ms` }}
-                  >
-                    {/* Image */}
-                    <div className="relative bg-gray-200 h-64 overflow-hidden">
-                      {product.images?.[0] ? (
-                        <img
-                          src={product.images[0]}
-                          alt={product.name}
-                          className="w-full h-full object-cover group-hover:scale-110 transition duration-300"
-                        />
-                      ) : (
-                        <div className="flex items-center justify-center h-full text-6xl">🛋️</div>
-                      )}
-                      {product.discount ? (
-                        <span className="absolute top-3 right-3 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow">
-                          -{product.discount}%
-                        </span>
-                      )}
-                    </div>
-                    {/* Content */}
-                    <div className="p-6">
-                      <h3 className="text-lg font-bold text-primary mb-2 line-clamp-2">{product.name}</h3>
-                      {/* Rating */}
-                      <div className="flex items-center gap-2 mb-4">
-                        <div className="flex text-yellow-400">
-                          {[...Array(5)].map((_, i) => (
-                            <span key={i}>{i < Math.round(product.rating || 0) ? '★' : '☆'}</span>
-                          ))}
-                        </div>
-                        <span className="text-sm text-gray-600">({product.reviewCount ?? 0})</span>
-                      </div>
-                      {/* Price */}
-                      <div className="flex items-end gap-2 mb-4">
-                        <span className="text-2xl font-bold text-secondary">
-                          {getDiscountedPrice(product.price, product.discount).toLocaleString('vi-VN')}
-                        </span>
-                        {product.discount ? (
-                          <span className="text-sm text-gray-500 line-through">
-                            {product.price.toLocaleString('vi-VN')}
-                          </span>
-                        ) : null}
-                      </div>
-                      <button className="w-full bg-gradient-to-r from-secondary to-yellow-500 text-white py-2 rounded-lg hover:scale-105 hover:bg-yellow-600 transition font-semibold shadow">
-                        Xem chi tiết
-                      </button>
-                    </div>
-                  </div>
-                </Link>
+                <div
+                  key={product._id}
+                  style={{ animationDelay: `${idx * 80}ms` }}
+                  className="animate-fade-in-up"
+                >
+                  <ProductCard product={product} />
+                </div>
               ))}
             </div>
           )}
@@ -203,22 +157,28 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gradient-to-r from-secondary to-yellow-600 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold mb-4 animate-fade-in-up">Đăng ký nhận bản tin</h2>
-          <p className="text-xl mb-8 opacity-90 animate-fade-in-up delay-100">Nhận thông tin sản phẩm mới, khuyến mãi đặc biệt</p>
-          <form className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto animate-fade-in-up delay-200">
-            <input
-              type="email"
-              placeholder="Nhập email của bạn"
-              className="flex-1 px-4 py-3 rounded-lg text-primary focus:outline-none"
-            />
-            <button type="submit" className="px-8 py-3 bg-primary rounded-lg hover:bg-gray-800 transition font-semibold">
-              Đăng ký
-            </button>
-          </form>
-        </div>
-      </section>
+      {settings?.newsletter?.enabled !== false && (
+        <section className="bg-gradient-to-r from-secondary to-yellow-600 text-white py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-4xl font-bold mb-4 animate-fade-in-up">
+              {settings?.newsletter?.title || 'Đăng ký nhận bản tin'}
+            </h2>
+            <p className="text-xl mb-8 opacity-90 animate-fade-in-up delay-100">
+              {settings?.newsletter?.subtitle || 'Nhận thông tin sản phẩm mới, khuyến mãi đặc biệt'}
+            </p>
+            <form className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto animate-fade-in-up delay-200">
+              <input
+                type="email"
+                placeholder={settings?.newsletter?.placeholder || 'Nhập email của bạn'}
+                className="flex-1 px-4 py-3 rounded-lg text-primary focus:outline-none"
+              />
+              <button type="submit" className="px-8 py-3 bg-primary rounded-lg hover:bg-gray-800 transition font-semibold">
+                {settings?.newsletter?.buttonText || 'Đăng ký'}
+              </button>
+            </form>
+          </div>
+        </section>
+      )}
 
       <Footer />
     </div>

@@ -41,7 +41,7 @@ export class Order {
   @Prop({ required: true })
   phone!: string;
 
-  @Prop({ default: 'pending', enum: ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'] })
+  @Prop({ default: 'pending', enum: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'] })
   status!: string;
 
   @Prop({ default: 'cod', enum: ['cod', 'stripe', 'momo'] })
@@ -55,6 +55,27 @@ export class Order {
 
   @Prop({ type: MongooseSchema.Types.ObjectId })
   shipperId?: string;
+
+  @Prop({ type: MongooseSchema.Types.ObjectId })
+  branchId?: string; // Chi nhánh xử lý đơn hàng
+
+  @Prop()
+  trackingNumber?: string;
+
+  @Prop({ default: Date.now })
+  confirmedAt?: Date;
+
+  @Prop()
+  shippedAt?: Date;
+
+  @Prop()
+  deliveredAt?: Date;
+
+  @Prop()
+  cancelledAt?: Date;
+
+  @Prop()
+  cancelReason?: string;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

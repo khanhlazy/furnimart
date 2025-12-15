@@ -9,30 +9,11 @@ import { useCartStore } from '@store/cartStore';
 import { useAuthStore } from '@store/authStore';
 import { toast } from 'react-toastify';
 import Link from 'next/link';
-import { FiShoppingCart, FiArrowLeft } from 'react-icons/fi';
+import { FiShoppingCart, FiArrowLeft, FiBox, FiImage } from 'react-icons/fi';
 import Navbar from '@components/Navbar';
 import Footer from '@components/Footer';
-
-interface Product {
-  _id: string;
-  name: string;
-  description: string;
-  price: number;
-  discount: number;
-  stock: number;
-  rating?: number;
-  reviewCount?: number;
-  images?: string[];
-  category: string;
-}
-
-interface Review {
-  _id: string;
-  customerName: string;
-  rating: number;
-  comment: string;
-  createdAt: string;
-}
+import Product3DViewer from '@components/Product3DViewer';
+import { Product, Review } from '@types';
 
 const getDiscountedPrice = (price: number, discount = 0) => {
   if (!discount) return price;
@@ -44,6 +25,7 @@ export default function ProductDetailPage() {
   const productId = params.id as string;
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [viewMode, setViewMode] = useState<'2d' | '3d'>('2d');
   const { addItem } = useCartStore();
   const { user } = useAuthStore();
 
@@ -128,28 +110,68 @@ export default function ProductDetailPage() {
 
       <div className="section-shell py-10 flex-1 space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-          {/* Images */}
-          <div className="panel space-y-4">
-            <div className="bg-gray-100 rounded-xl overflow-hidden">
-              {heroImage ? (
-                <img src={heroImage} alt={product.name} className="w-full h-96 object-cover" />
-              ) : (
-                <div className="w-full h-96 flex items-center justify-center text-6xl text-gray-400">🛋️</div>
-              )}
-            </div>
-            <div className="flex gap-2 overflow-x-auto pb-2">
-              {product.images?.map((image, idx) => (
+          {/* Images / 3D Viewer */}
+          <div className="panel space-y-4 sticky top-24">
+            {/* View Mode Toggle */}
+            {product.model3d && (
+              <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
                 <button
-                  key={idx}
-                  onClick={() => setSelectedImage(idx)}
-                  className={`flex-shrink-0 w-20 h-20 rounded-xl border-2 overflow-hidden transition ${
-                    selectedImage === idx ? 'border-secondary' : 'border-gray-200 hover:border-secondary/60'
+                  onClick={() => setViewMode('2d')}
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition ${
+                    viewMode === '2d'
+                      ? 'bg-white text-secondary shadow'
+                      : 'text-gray-600 hover:text-secondary'
                   }`}
                 >
-                  <img src={image} alt="" className="w-full h-full object-cover" />
+                  <FiImage /> 2D
                 </button>
-              ))}
-            </div>
+                <button
+                  onClick={() => setViewMode('3d')}
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition ${
+                    viewMode === '3d'
+                      ? 'bg-white text-secondary shadow'
+                      : 'text-gray-600 hover:text-secondary'
+                  }`}
+                >
+                  <FiBox /> 3D
+                </button>
+              </div>
+            )}
+
+            {/* 2D View */}
+            {viewMode === '2d' && (
+              <>
+                <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl overflow-hidden h-96 shadow-lg">
+                  {heroImage ? (
+                    <img src={heroImage} alt={product.name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-6xl text-gray-400">🛋️</div>
+                  )}
+                </div>
+                {product.images && product.images.length > 1 && (
+                  <div className="flex gap-2 overflow-x-auto pb-2">
+                    {product.images.map((image, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setSelectedImage(idx)}
+                        className={`flex-shrink-0 w-20 h-20 rounded-xl border-2 overflow-hidden transition ${
+                          selectedImage === idx ? 'border-secondary' : 'border-gray-200 hover:border-secondary/60'
+                        }`}
+                      >
+                        <img src={image} alt="" className="w-full h-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* 3D View */}
+            {viewMode === '3d' && (
+              <div className="h-96 rounded-xl overflow-hidden">
+                <Product3DViewer modelUrl={product.model3d} />
+              </div>
+            )}
           </div>
 
           {/* Details */}
@@ -169,12 +191,12 @@ export default function ProductDetailPage() {
               <span className="text-4xl font-bold text-secondary">
                 {discountedPrice.toLocaleString('vi-VN')} VNĐ
               </span>
-              {product.discount > 0 && (
+              {(product.discount || 0) > 0 && (
                 <div className="flex items-center gap-3">
                   <span className="text-xl text-gray-500 line-through">
                     {product.price.toLocaleString('vi-VN')} VNĐ
                   </span>
-                  <span className="pill bg-secondary text-white">-{product.discount}%</span>
+                  <span className="pill bg-secondary text-white">-{product.discount || 0}%</span>
                 </div>
               )}
             </div>
@@ -191,6 +213,47 @@ export default function ProductDetailPage() {
               <h3 className="text-lg font-semibold text-gray-900">Mô tả</h3>
               <p className="text-gray-600 leading-relaxed">{product.description}</p>
             </div>
+
+            {/* Specifications */}
+            {(product.materials?.length || product.colors?.length || product.dimensions) && (
+              <div className="space-y-3 pt-4 border-t">
+                <h3 className="text-lg font-semibold text-gray-900">Thông số kỹ thuật</h3>
+                
+                {product.materials && product.materials.length > 0 && (
+                  <div>
+                    <span className="text-sm font-medium text-gray-700">Chất liệu: </span>
+                    <span className="text-gray-600">{product.materials.join(', ')}</span>
+                  </div>
+                )}
+
+                {product.colors && product.colors.length > 0 && (
+                  <div>
+                    <span className="text-sm font-medium text-gray-700">Màu sắc: </span>
+                    <span className="text-gray-600">{product.colors.join(', ')}</span>
+                  </div>
+                )}
+
+                {product.dimensions && (
+                  <div className="space-y-1">
+                    <span className="text-sm font-medium text-gray-700">Kích thước:</span>
+                    <div className="text-gray-600 text-sm space-y-1 pl-4">
+                      {product.dimensions?.length && (
+                        <div>Chiều dài: {product.dimensions.length} {product.dimensions.unit || 'cm'}</div>
+                      )}
+                      {product.dimensions?.width && (
+                        <div>Chiều rộng: {product.dimensions.width} {product.dimensions.unit || 'cm'}</div>
+                      )}
+                      {product.dimensions?.height && (
+                        <div>Chiều cao: {product.dimensions.height} {product.dimensions.unit || 'cm'}</div>
+                      )}
+                      {product.dimensions?.weight && (
+                        <div>Trọng lượng: {product.dimensions.weight} kg</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Quantity & Add to Cart */}
             {product.stock > 0 && (

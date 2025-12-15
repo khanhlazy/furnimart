@@ -33,11 +33,8 @@
       "@services/*": [
         "./services/*"
       ],
-      "@types/*": [
-        "./types/*"
-      ],
-      "@utils/*": [
-        "./utils/*"
+      "@types": [
+        "./types/types"
       ]
     },
     "allowJs": true,

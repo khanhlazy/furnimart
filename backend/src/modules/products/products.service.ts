@@ -16,6 +16,8 @@ export class ProductsService {
     const query: any = { isActive: true };
     
     if (filters?.category) query.category = filters.category;
+    if (filters?.categoryId) query.categoryId = filters.categoryId;
+    if (filters?.isFeatured !== undefined) query.isFeatured = filters.isFeatured === 'true' || filters.isFeatured === true;
     
     if (filters?.search) {
       query.$or = [
@@ -32,10 +34,30 @@ export class ProductsService {
       query.price = { ...query.price, $lte: filters.maxPrice };
     }
 
+    if (filters?.materials && Array.isArray(filters.materials)) {
+      query.materials = { $in: filters.materials };
+    } else if (filters?.material) {
+      query.materials = filters.material;
+    }
+
+    if (filters?.colors && Array.isArray(filters.colors)) {
+      query.colors = { $in: filters.colors };
+    } else if (filters?.color) {
+      query.colors = filters.color;
+    }
+
+    // Sorting
+    let sort: any = {};
+    if (filters?.sortBy === 'price_asc') sort = { price: 1 };
+    else if (filters?.sortBy === 'price_desc') sort = { price: -1 };
+    else if (filters?.sortBy === 'newest') sort = { createdAt: -1 };
+    else if (filters?.sortBy === 'rating') sort = { rating: -1 };
+    else sort = { createdAt: -1 }; // default: newest first
+
     const limit = Math.min(parseInt(filters?.limit) || 20, 100);
     const skip = Math.max(parseInt(filters?.skip) || 0, 0);
 
-    return this.productModel.find(query).limit(limit).skip(skip).exec();
+    return this.productModel.find(query).sort(sort).limit(limit).skip(skip).exec();
   }
 
   async findById(id: string): Promise<ProductDocument> {

@@ -28,16 +28,29 @@ export class ShippingService {
   }
 
   async updateStatus(orderId: string, updateDto: UpdateShippingDto): Promise<ShippingTrackingDocument | null> {
-    return this.shippingModel.findOneAndUpdate(
-      { orderId },
-      {
-        status: updateDto.status,
-        currentLocation: updateDto.currentLocation,
-        proofOfDeliveryImage: updateDto.proofOfDeliveryImage,
-        customerSignature: updateDto.customerSignature,
-        deliveryNote: updateDto.deliveryNote,
-      },
-      { new: true },
-    );
+    const tracking = await this.shippingModel.findOne({ orderId }).exec();
+    if (!tracking) {
+      return null;
+    }
+
+    // Add to tracking history
+    const historyEntry = {
+      status: updateDto.status || tracking.status,
+      location: updateDto.currentLocation || tracking.currentLocation,
+      note: updateDto.deliveryNote,
+      timestamp: new Date(),
+    };
+
+    tracking.trackingHistory.push(historyEntry);
+
+    // Update current status and other fields
+    if (updateDto.status) tracking.status = updateDto.status as any;
+    if (updateDto.currentLocation !== undefined) tracking.currentLocation = updateDto.currentLocation;
+    if (updateDto.proofOfDeliveryImage) tracking.proofOfDeliveryImage = updateDto.proofOfDeliveryImage;
+    if (updateDto.customerSignature) tracking.customerSignature = updateDto.customerSignature;
+    if (updateDto.deliveryNote) tracking.deliveryNote = updateDto.deliveryNote;
+    if (updateDto.estimatedDelivery) tracking.estimatedDelivery = new Date(updateDto.estimatedDelivery);
+
+    return tracking.save();
   }
 }

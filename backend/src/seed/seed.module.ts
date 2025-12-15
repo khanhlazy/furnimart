@@ -6,6 +6,7 @@ import { User, UserSchema } from '../modules/users/schemas/user.schema';
 import { Product, ProductSchema } from '../modules/products/schemas/product.schema';
 import { Order, OrderSchema } from '../modules/orders/schemas/order.schema';
 import { Review, ReviewSchema } from '../modules/reviews/schemas/review.schema';
+import { Category, CategorySchema } from '../modules/categories/schemas/category.schema';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { Review, ReviewSchema } from '../modules/reviews/schemas/review.schema';
       envFilePath: '.env',
     }),
     MongooseModule.forRoot(
-      process.env.MONGODB_URI || 'mongodb://localhost:27017/furnimart',
+      process.env.MONGODB_URI || 'mongodb://admin:admin123@localhost:27017/furnimart?authSource=admin',
       {
         serverSelectionTimeoutMS: 5000,
       },
@@ -24,6 +25,7 @@ import { Review, ReviewSchema } from '../modules/reviews/schemas/review.schema';
       { name: Product.name, schema: ProductSchema },
       { name: Order.name, schema: OrderSchema },
       { name: Review.name, schema: ReviewSchema },
+      { name: Category.name, schema: CategorySchema },
     ]),
   ],
   providers: [SeedService],

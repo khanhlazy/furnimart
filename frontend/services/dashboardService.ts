@@ -2,22 +2,18 @@ import apiClient from './api';
 
 export const dashboardService = {
   getStats: async () => {
-    const response = await apiClient.get('/dashboard/stats');
-    return response;
+    return apiClient.get('/dashboard/stats') as Promise<any>;
   },
 
   getOrderStats: async (days = 30) => {
-    const response = await apiClient.get('/dashboard/orders-stats', { params: { days } });
-    return response;
+    return apiClient.get('/dashboard/orders-stats', { params: { days } }) as Promise<any>;
   },
 
   getTopProducts: async (limit = 10) => {
-    const response = await apiClient.get('/dashboard/top-products', { params: { limit } });
-    return response;
+    return apiClient.get('/dashboard/top-products', { params: { limit } }) as Promise<any>;
   },
 
   getOrdersByStatus: async () => {
-    const response = await apiClient.get('/dashboard/orders-by-status');
-    return response;
+    return apiClient.get('/dashboard/orders-by-status') as Promise<any>;
   },
 };

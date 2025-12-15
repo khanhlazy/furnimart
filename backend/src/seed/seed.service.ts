@@ -6,6 +6,7 @@ import { User, UserDocument } from '../modules/users/schemas/user.schema';
 import { Product, ProductDocument } from '../modules/products/schemas/product.schema';
 import { Order, OrderDocument } from '../modules/orders/schemas/order.schema';
 import { Review, ReviewDocument } from '../modules/reviews/schemas/review.schema';
+import { Category, CategoryDocument } from '../modules/categories/schemas/category.schema';
 
 @Injectable()
 export class SeedService {
@@ -14,6 +15,7 @@ export class SeedService {
     @InjectModel(Product.name) private productModel: Model<ProductDocument>,
     @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
     @InjectModel(Review.name) private reviewModel: Model<ReviewDocument>,
+    @InjectModel(Category.name) private categoryModel: Model<CategoryDocument>,
   ) {}
 
   async seed(): Promise<void> {
@@ -25,16 +27,21 @@ export class SeedService {
       this.productModel.deleteMany({}),
       this.orderModel.deleteMany({}),
       this.reviewModel.deleteMany({}),
+      this.categoryModel.deleteMany({}),
     ]);
 
     console.log('✓ Cleared existing data');
+
+    // Seed Categories first
+    const categories = await this.seedCategories();
+    console.log('✓ Created categories');
 
     // Seed Users
     const users = await this.seedUsers();
     console.log('✓ Created users');
 
     // Seed Products
-    const products = await this.seedProducts();
+    const products = await this.seedProducts(categories);
     console.log('✓ Created products');
 
     // Seed Orders
@@ -107,7 +114,25 @@ export class SeedService {
     return this.userModel.insertMany(users);
   }
 
-  private async seedProducts() {
+  private async seedCategories() {
+    const categories = [
+      { name: 'Sofa', slug: 'sofa', description: 'Ghế sofa và ghế dài', sortOrder: 1 },
+      { name: 'Ghế', slug: 'chair', description: 'Ghế ăn, ghế văn phòng, ghế phụ', sortOrder: 2 },
+      { name: 'Bàn', slug: 'table', description: 'Bàn ăn, bàn làm việc, bàn cà phê', sortOrder: 3 },
+      { name: 'Giường', slug: 'bed', description: 'Giường ngủ và phụ kiện', sortOrder: 4 },
+      { name: 'Tủ', slug: 'cabinet', description: 'Tủ quần áo, tủ trang trí, tủ kệ', sortOrder: 5 },
+    ];
+
+    return this.categoryModel.insertMany(categories);
+  }
+
+  private async seedProducts(categories: CategoryDocument[]) {
+    // Create category map
+    const categoryMap: Record<string, CategoryDocument> = {};
+    categories.forEach((cat) => {
+      categoryMap[cat.slug] = cat;
+    });
+
     const products = [
       {
         name: 'Sofa Vải Nhung 3 Chỗ',
@@ -119,6 +144,7 @@ export class SeedService {
           'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500',
           'https://images.unsplash.com/photo-1495198917210-f395dc0bbb27?w=500',
         ],
+        categoryId: categoryMap['sofa']._id,
         category: 'sofa',
         rating: 4.5,
         reviewCount: 12,
@@ -133,6 +159,7 @@ export class SeedService {
         images: [
           'https://images.unsplash.com/photo-1592078615290-033ee584e267?w=500',
         ],
+        categoryId: categoryMap['chair']._id,
         category: 'chair',
         rating: 4,
         reviewCount: 8,
@@ -147,6 +174,7 @@ export class SeedService {
         images: [
           'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=500',
         ],
+        categoryId: categoryMap['table']._id,
         category: 'table',
         rating: 5,
         reviewCount: 15,
@@ -161,6 +189,7 @@ export class SeedService {
         images: [
           'https://images.unsplash.com/photo-1540932239986-310128078ceb?w=500',
         ],
+        categoryId: categoryMap['bed']._id,
         category: 'bed',
         rating: 4.8,
         reviewCount: 20,
@@ -175,6 +204,7 @@ export class SeedService {
         images: [
           'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500',
         ],
+        categoryId: categoryMap['cabinet']._id,
         category: 'cabinet',
         rating: 4.2,
         reviewCount: 10,
@@ -189,6 +219,7 @@ export class SeedService {
         images: [
           'https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237?w=500',
         ],
+        categoryId: categoryMap['table']._id,
         category: 'table',
         rating: 4.3,
         reviewCount: 9,
@@ -203,6 +234,7 @@ export class SeedService {
         images: [
           'https://images.unsplash.com/photo-1572846092129-af9d8a7f6e31?w=500',
         ],
+        categoryId: categoryMap['chair']._id,
         category: 'chair',
         rating: 4.6,
         reviewCount: 14,
@@ -217,6 +249,7 @@ export class SeedService {
         images: [
           'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500',
         ],
+        categoryId: categoryMap['cabinet']._id,
         category: 'cabinet',
         rating: 4.7,
         reviewCount: 11,
@@ -231,6 +264,7 @@ export class SeedService {
         images: [
           'https://images.unsplash.com/photo-1597072200969-2b65d56bd16b?w=500',
         ],
+        categoryId: categoryMap['sofa']._id,
         category: 'sofa',
         rating: 4.4,
         reviewCount: 13,
@@ -245,6 +279,7 @@ export class SeedService {
         images: [
           'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=500',
         ],
+        categoryId: categoryMap['table']._id,
         category: 'table',
         rating: 4.5,
         reviewCount: 10,
@@ -252,7 +287,17 @@ export class SeedService {
       },
     ];
 
-    return this.productModel.insertMany(products);
+    const insertedProducts = await this.productModel.insertMany(products);
+    
+    // Convert categoryId from ObjectId to string for type compatibility
+    return insertedProducts.map((p) => {
+      const product = p.toObject();
+      return {
+        ...product,
+        categoryId: product.categoryId.toString(),
+        _id: product._id,
+      } as ProductDocument;
+    });
   }
 
   private async seedOrders(users: UserDocument[], products: ProductDocument[]) {

@@ -9,6 +9,11 @@ import { OrdersModule } from './modules/orders/orders.module';
 import { ShippingModule } from './modules/shipping/shipping.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { CategoriesModule } from './modules/categories/categories.module';
+import { ChatModule } from './modules/chat/chat.module';
+import { WarehouseModule } from './modules/warehouse/warehouse.module';
+import { DisputesModule } from './modules/disputes/disputes.module';
+import { SettingsModule } from './modules/settings/settings.module';
 
 @Module({
   imports: [
@@ -29,6 +34,11 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     ShippingModule,
     ReviewsModule,
     DashboardModule,
+    CategoriesModule,
+    ChatModule,
+    WarehouseModule,
+    DisputesModule,
+    SettingsModule,
   ],
   controllers: [AppController],
 })

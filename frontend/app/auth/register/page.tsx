@@ -34,12 +34,22 @@ export default function RegisterPage() {
         phone: data.phone,
       });
       
-      const { accessToken, user } = response.data;
+      // API interceptor already unwraps response.data, so response is the actual data
+      const { accessToken, user } = response;
+      
+      if (!accessToken || !user) {
+        toast.error('Đăng ký thất bại. Vui lòng thử lại.');
+        return;
+      }
+      
       login(accessToken, user);
       toast.success('Đăng ký thành công!');
-      router.push('/dashboard');
-    } catch {
-      // Error already handled in interceptor
+      router.push('/products');
+    } catch (error: any) {
+      // Error handled in interceptor, but show message if needed
+      if (error?.response?.data?.message) {
+        toast.error(error.response.data.message);
+      }
     }
   };
 

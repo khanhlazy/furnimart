@@ -3,12 +3,16 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Copy package files
 COPY package*.json ./
 
-RUN npm ci
+# Install dependencies
+RUN npm ci --legacy-peer-deps
 
+# Copy source code
 COPY . .
 
+# Build application
 RUN npm run build
 
 # Production stage
@@ -21,8 +25,11 @@ RUN apk add --no-cache dumb-init
 
 COPY package*.json ./
 
-RUN npm ci --only=production && npm cache clean --force
+# Install only production dependencies
+RUN npm ci --only=production --legacy-peer-deps && \
+    npm cache clean --force
 
+# Copy built application
 COPY --from=builder /app/dist ./dist
 
 EXPOSE 3001

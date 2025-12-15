@@ -2,32 +2,26 @@ import apiClient from './api';
 
 export const orderService = {
   create: async (data: any) => {
-    const response = await apiClient.post('/orders', data);
-    return response;
+    return apiClient.post('/orders', data) as Promise<any>;
   },
 
   getMyOrders: async () => {
-    const response = await apiClient.get('/orders/my-orders');
-    return response;
+    return apiClient.get('/orders/my-orders') as Promise<any>;
   },
 
   getAll: async (filters?: any) => {
-    const response = await apiClient.get('/orders', { params: filters });
-    return response;
+    return apiClient.get('/orders', { params: filters }) as Promise<any>;
   },
 
   getById: async (id: string) => {
-    const response = await apiClient.get(`/orders/${id}`);
-    return response;
+    return apiClient.get(`/orders/${id}`) as Promise<any>;
   },
 
   updateStatus: async (id: string, status: string) => {
-    const response = await apiClient.put(`/orders/${id}/status`, { status });
-    return response;
+    return apiClient.put(`/orders/${id}/status`, { status }) as Promise<any>;
   },
 
   assignShipper: async (orderId: string, shipperId: string) => {
-    const response = await apiClient.put(`/orders/${orderId}/assign-shipper`, { shipperId });
-    return response;
+    return apiClient.put(`/orders/${orderId}/assign-shipper`, { shipperId }) as Promise<any>;
   },
 };

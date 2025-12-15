@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
@@ -19,17 +19,54 @@ export default function LoginPage() {
   const { login } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginForm>();
+  
+  // Get redirect URL from query params
+  const [redirectUrl, setRedirectUrl] = useState('/products');
+  
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const redirect = params.get('redirect');
+      if (redirect) {
+        setRedirectUrl(redirect);
+      }
+    }
+  }, []);
 
   const onSubmit = async (data: LoginForm) => {
     try {
       const response = await authService.login(data);
-      const { accessToken, user } = response.data;
+      // API interceptor already unwraps response.data, so response is the actual data
+      const { accessToken, user } = response;
       
+      if (!accessToken || !user) {
+        toast.error('Đăng nhập thất bại. Vui lòng thử lại.');
+        return;
+      }
+      
+      // Save token and user to store (this also sets cookies)
       login(accessToken, user);
+      
+      // Verify token was saved
+      const { token } = useAuthStore.getState();
+      if (!token) {
+        console.error('❌ Token not saved after login');
+        toast.error('Lỗi lưu thông tin đăng nhập. Vui lòng thử lại.');
+        return;
+      }
+      
+      console.log('✅ Login successful, token saved:', token.substring(0, 20) + '...');
       toast.success('Đăng nhập thành công!');
-      router.push('/products');
-    } catch {
-      // Error handled in interceptor
+      
+      // Small delay to ensure cookies are set before redirect
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      router.push(redirectUrl);
+    } catch (error: any) {
+      // Error handled in interceptor, but show message if needed
+      if (error?.response?.data?.message) {
+        toast.error(error.response.data.message);
+      }
     }
   };
 
