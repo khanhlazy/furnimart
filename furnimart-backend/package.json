@@ -5,8 +5,6 @@
   "scripts": {
     "start": "node dist/main.js",
     "build": "tsc -p tsconfig.json",
-    "start:dev": "ts-node -r tsconfig-paths/register src/main.ts",
-    "start:prod": "node dist/main.js"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.1",
@@ -17,6 +15,8 @@
     "@nestjs/platform-express": "^11.1.9",
     "@nestjs/serve-static": "^5.0.4",
     "bcryptjs": "^3.0.3",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
     "mongoose": "^9.0.1",
     "multer": "^2.0.2",
     "passport": "^0.7.0",
