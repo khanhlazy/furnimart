@@ -208,17 +208,4 @@ export default function Home() {
   );
 }
 
-// Thêm vào globals.css:
-// /*
-// .animate-fade-in-up {
-//   opacity: 0;
-//   transform: translateY(40px);
-//   animation: fadeInUp 0.8s cubic-bezier(0.4,0,0.2,1) forwards;
-// }
-// @keyframes fadeInUp {
-//   to {
-//     opacity: 1;
-//     transform: none;
-//   }
-// }
-// */
+// Animation utilities are defined in globals.css
