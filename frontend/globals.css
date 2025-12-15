@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Font đẹp cho toàn site */
+body {
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #f8fafc 0%, #fef6e4 100%);
+  min-height: 100vh;
+}
+
+/* Navbar shadow + sticky */
+nav {
+  box-shadow: 0 4px 24px 0 rgba(0,0,0,0.04);
+  background: linear-gradient(90deg, #fff 80%, #fef6e4 100%);
+}
+
+/* Nút nổi bật */
+.btn-primary {
+  @apply bg-gradient-to-r from-secondary to-yellow-500 text-white rounded-xl shadow-lg hover:scale-105 hover:shadow-2xl transition-all font-semibold text-lg px-8 py-4;
+}
+
+/* Card sản phẩm */
+.product-card {
+  @apply bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition transform hover:-translate-y-1 border border-gray-100 hover:border-secondary;
+  animation: fadeInUp 0.7s cubic-bezier(0.4,0,0.2,1) both;
+}
+.product-card img {
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.product-card:hover img {
+  transform: scale(1.08);
+}
+
+/* Animation xuất hiện */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(40px);}
+  to { opacity: 1; transform: none;}
+}
+.animate-fade-in-up {
+  opacity: 0;
+  transform: translateY(40px);
+  animation: fadeInUp 0.8s cubic-bezier(0.4,0,0.2,1) forwards;
+}
+
+/* Hiệu ứng nút */
+button, .btn {
+  transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+button:active, .btn:active {
+  transform: scale(0.97);
+}
+
+/* Scrollbar đẹp */
+::-webkit-scrollbar {
+  width: 8px;
+  background: #f3f4f6;
+}
+::-webkit-scrollbar-thumb {
+  background: #eab308;
+  border-radius: 8px;
+}
+
+/* Responsive heading */
+h1, h2, h3 {
+  letter-spacing: -1px;
+}
+
+/* Gradient border cho section nổi bật */
+.section-gradient {
+  border-top: 4px solid transparent;
+  border-image: linear-gradient(90deg, #fbbf24, #f59e42, #fbbf24) 1;
+}
+
+/* Hiệu ứng hover cho link */
+a {
+  transition: color 0.2s;
+}
+a:hover {
+  color: #eab308;
+}
+
+/* Custom màu Tailwind nếu cần (tailwind.config.js):
+theme: {
+  extend: {
+    colors: {
+      primary: '#1e293b',
+      secondary: '#eab308',
+      accent: '#f59e42',
+    }
+  }
+}
+*/
+
+.animate-fade-in {
+  animation: fadeIn 0.7s cubic-bezier(0.4,0,0.2,1) both;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px);}
+  to { opacity: 1; transform: none; }
+}
