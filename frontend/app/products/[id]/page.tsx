@@ -20,9 +20,9 @@ interface Product {
   price: number;
   discount: number;
   stock: number;
-  rating: number;
-  reviewCount: number;
-  images: string[];
+  rating?: number;
+  reviewCount?: number;
+  images?: string[];
   category: string;
 }
 
@@ -34,6 +34,11 @@ interface Review {
   createdAt: string;
 }
 
+const getDiscountedPrice = (price: number, discount = 0) => {
+  if (!discount) return price;
+  return Math.round(price * (1 - discount / 100));
+};
+
 export default function ProductDetailPage() {
   const params = useParams();
   const productId = params.id as string;
@@ -42,20 +47,22 @@ export default function ProductDetailPage() {
   const { addItem } = useCartStore();
   const { user } = useAuthStore();
 
-  const { data: productResponse, isLoading } = useQuery(
+  const { data: product, isLoading } = useQuery<Product>(
     ['product', productId],
     () => productService.getById(productId),
   );
 
-  const { data: reviewsResponse } = useQuery(
+  const { data: reviewsResponse } = useQuery<Review[]>(
     ['reviews', productId],
     () => reviewService.getByProduct(productId),
   );
 
-  const product: Product = productResponse?.data;
-  const reviews: Review[] = reviewsResponse?.data || [];
+  const reviews: Review[] = reviewsResponse || [];
+  const discountedPrice = product ? getDiscountedPrice(product.price, product.discount) : 0;
+  const heroImage = product?.images?.[selectedImage];
 
   const handleAddToCart = () => {
+    if (!product) return;
     if (quantity > product.stock) {
       toast.error('Số lượng vượt quá tồn kho');
       return;
@@ -63,7 +70,7 @@ export default function ProductDetailPage() {
     addItem({
       productId: product._id,
       name: product.name,
-      price: product.price - (product.discount || 0),
+      price: discountedPrice,
       quantity,
       image: product.images?.[0],
     });
@@ -113,7 +120,7 @@ export default function ProductDetailPage() {
           <div className="flex flex-wrap items-center gap-3">
             <span className="pill capitalize">{product.category}</span>
             <span className="pill bg-white/20 text-white backdrop-blur">
-              ⭐ {product.rating.toFixed(1)} ({product.reviewCount})
+              ⭐ {(product.rating ?? 0).toFixed(1)} ({product.reviewCount ?? 0})
             </span>
           </div>
         </div>
@@ -124,11 +131,11 @@ export default function ProductDetailPage() {
           {/* Images */}
           <div className="panel space-y-4">
             <div className="bg-gray-100 rounded-xl overflow-hidden">
-              <img
-                src={product.images?.[selectedImage]}
-                alt={product.name}
-                className="w-full h-96 object-cover"
-              />
+              {heroImage ? (
+                <img src={heroImage} alt={product.name} className="w-full h-96 object-cover" />
+              ) : (
+                <div className="w-full h-96 flex items-center justify-center text-6xl text-gray-400">🛋️</div>
+              )}
             </div>
             <div className="flex gap-2 overflow-x-auto pb-2">
               {product.images?.map((image, idx) => (
@@ -151,16 +158,16 @@ export default function ProductDetailPage() {
             <div className="flex items-center gap-2">
               <div className="flex text-yellow-400 text-lg">
                 {[...Array(5)].map((_, i) => (
-                  <span key={i}>{i < Math.round(product.rating) ? '★' : '☆'}</span>
+                  <span key={i}>{i < Math.round(product.rating || 0) ? '★' : '☆'}</span>
                 ))}
               </div>
-              <span className="text-gray-600">({product.reviewCount} đánh giá)</span>
+              <span className="text-gray-600">({product.reviewCount ?? 0} đánh giá)</span>
             </div>
 
             {/* Price */}
             <div className="space-y-2">
               <span className="text-4xl font-bold text-secondary">
-                {(product.price - (product.discount || 0)).toLocaleString('vi-VN')} VNĐ
+                {discountedPrice.toLocaleString('vi-VN')} VNĐ
               </span>
               {product.discount > 0 && (
                 <div className="flex items-center gap-3">

@@ -22,6 +22,11 @@ interface Product {
   stock: number;
 }
 
+const getDiscountedPrice = (price: number, discount = 0) => {
+  if (!discount) return price;
+  return Math.round(price * (1 - discount / 100));
+};
+
 export default function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState('');
@@ -30,12 +35,10 @@ export default function ProductsPage() {
   const [showFilters, setShowFilters] = useState(false);
   const { addItem } = useCartStore();
 
-  const { data: response, isLoading } = useQuery(
+  const { data: products, isLoading } = useQuery<Product[]>(
     ['products', searchTerm, category, minPrice, maxPrice],
     () => productService.getAll({ search: searchTerm, category, minPrice, maxPrice, limit: 20 }),
   );
-
-  const products: Product[] = response?.data || [];
 
   const categories = ['sofa', 'chair', 'table', 'bed', 'cabinet'];
 
@@ -47,7 +50,7 @@ export default function ProductsPage() {
     addItem({
       productId: product._id,
       name: product.name,
-      price: product.price - (product.discount || 0),
+      price: getDiscountedPrice(product.price, product.discount),
       quantity: 1,
       image: product.images?.[0],
     });
@@ -191,9 +194,9 @@ export default function ProductsPage() {
               <div className="flex items-center justify-center py-20">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondary"></div>
               </div>
-            ) : products.length > 0 ? (
+            ) : (products || []).length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {products.map((product) => (
+                {(products || []).map((product) => (
                   <div key={product._id} className="product-card">
                     {/* Image */}
                     <Link href={`/products/${product._id}`}>
@@ -232,16 +235,16 @@ export default function ProductsPage() {
                       <div className="flex items-center gap-2 my-2">
                         <div className="flex text-yellow-400 text-sm">
                           {[...Array(5)].map((_, i) => (
-                            <span key={i}>{i < Math.round(product.rating) ? '★' : '☆'}</span>
+                            <span key={i}>{i < Math.round(product.rating || 0) ? '★' : '☆'}</span>
                           ))}
                         </div>
-                        <span className="text-xs text-gray-600">({product.reviewCount})</span>
+                        <span className="text-xs text-gray-600">({product.reviewCount ?? 0})</span>
                       </div>
 
                       {/* Price */}
                       <div className="mb-4">
                         <span className="text-2xl font-bold text-secondary">
-                          {(product.price - (product.discount || 0)).toLocaleString('vi-VN')}
+                          {getDiscountedPrice(product.price, product.discount).toLocaleString('vi-VN')}
                         </span>
                         {product.discount > 0 && (
                           <span className="ml-2 text-xs text-gray-500 line-through">

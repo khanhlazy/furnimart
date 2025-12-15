@@ -8,13 +8,28 @@ import { FiArrowRight, FiTruck, FiShield, FiStar } from 'react-icons/fi';
 import { useQuery } from 'react-query';
 import { productService } from '@services/productService';
 
+interface Product {
+  _id: string;
+  name: string;
+  price: number;
+  discount?: number;
+  rating?: number;
+  reviewCount?: number;
+  images?: string[];
+}
+
+const getDiscountedPrice = (price: number, discount = 0) => {
+  if (!discount) return price;
+  return Math.round(price * (1 - discount / 100));
+};
+
 export default function Home() {
   useEffect(() => {
     console.log('🏠 Home Page Loaded');
     console.log('📍 Location:', window.location.href);
   }, []);
 
-  const { data: response, isLoading, error } = useQuery(
+  const { data: products, isLoading, error } = useQuery<Product[]>(
     ['featured-products'],
     () => productService.getAll({ limit: 6 }),
     {
@@ -23,8 +38,6 @@ export default function Home() {
       retryDelay: 1000,
     },
   );
-
-  const products = response?.data || [];
 
   return (
     <div className="page-shell font-sans">
@@ -118,10 +131,12 @@ export default function Home() {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondary"></div>
             </div>
           ) : error ? (
-            <div className="text-center text-red-500">Không thể tải sản phẩm. Vui lòng thử lại.</div>
+            <div className="text-center text-red-500">
+              Không thể tải sản phẩm. Vui lòng thử lại.
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {products.map((product: any, idx: number) => (
+              {(products || []).map((product, idx) => (
                 <Link key={product._id} href={`/products/${product._id}`}>
                   <div
                     className="product-card animate-fade-in-up"
@@ -138,7 +153,7 @@ export default function Home() {
                       ) : (
                         <div className="flex items-center justify-center h-full text-6xl">🛋️</div>
                       )}
-                      {product.discount > 0 && (
+                      {product.discount ? (
                         <span className="absolute top-3 right-3 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow">
                           -{product.discount}%
                         </span>
@@ -151,19 +166,21 @@ export default function Home() {
                       <div className="flex items-center gap-2 mb-4">
                         <div className="flex text-yellow-400">
                           {[...Array(5)].map((_, i) => (
-                            <span key={i}>{i < Math.round(product.rating) ? '★' : '☆'}</span>
+                            <span key={i}>{i < Math.round(product.rating || 0) ? '★' : '☆'}</span>
                           ))}
                         </div>
-                        <span className="text-sm text-gray-600">({product.reviewCount})</span>
+                        <span className="text-sm text-gray-600">({product.reviewCount ?? 0})</span>
                       </div>
                       {/* Price */}
                       <div className="flex items-end gap-2 mb-4">
                         <span className="text-2xl font-bold text-secondary">
-                          {(product.price - (product.discount || 0)).toLocaleString('vi-VN')}
+                          {getDiscountedPrice(product.price, product.discount).toLocaleString('vi-VN')}
                         </span>
-                        <span className="text-sm text-gray-500 line-through">
-                          {product.price.toLocaleString('vi-VN')}
-                        </span>
+                        {product.discount ? (
+                          <span className="text-sm text-gray-500 line-through">
+                            {product.price.toLocaleString('vi-VN')}
+                          </span>
+                        ) : null}
                       </div>
                       <button className="w-full bg-gradient-to-r from-secondary to-yellow-500 text-white py-2 rounded-lg hover:scale-105 hover:bg-yellow-600 transition font-semibold shadow">
                         Xem chi tiết

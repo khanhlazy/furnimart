@@ -27,13 +27,11 @@ const statusLabels: Record<string, { label: string; color: string }> = {
 export default function OrdersPage() {
   const { user } = useAuthStore();
 
-  const { data: response, isLoading } = useQuery(
+  const { data: orders, isLoading } = useQuery<Order[]>(
     ['myOrders'],
     () => orderService.getMyOrders(),
     { enabled: !!user },
   );
-
-  const orders: Order[] = response?.data || [];
 
   if (!user) {
     return (
@@ -51,6 +49,8 @@ export default function OrdersPage() {
       </div>
     );
   }
+
+  const orderList = orders || [];
 
   return (
     <div className="page-shell">
@@ -74,7 +74,7 @@ export default function OrdersPage() {
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondary"></div>
           </div>
-        ) : orders.length === 0 ? (
+        ) : orderList.length === 0 ? (
           <div className="empty-state">
             <p className="text-gray-600 text-lg mb-4">Bạn chưa có đơn hàng nào</p>
             <Link href="/products" className="inline-link">
@@ -83,7 +83,7 @@ export default function OrdersPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            {orders.map((order) => (
+            {orderList.map((order) => (
               <div key={order._id} className="panel hover:shadow-2xl transition">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <div className="flex-1 space-y-3">

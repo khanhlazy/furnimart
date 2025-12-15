@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 export interface CartItem {
   productId: string;
@@ -11,18 +11,21 @@ export interface CartItem {
 
 interface CartStore {
   items: CartItem[];
+  hasHydrated: boolean;
   addItem: (item: CartItem) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
   getTotalPrice: () => number;
   getTotalItems: () => number;
+  setHasHydrated: (hasHydrated: boolean) => void;
 }
 
 export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
+      hasHydrated: false,
       addItem: (item: CartItem) => {
         set((state) => {
           const existingItem = state.items.find((i) => i.productId === item.productId);
@@ -51,6 +54,7 @@ export const useCartStore = create<CartStore>()(
         }));
       },
       clearCart: () => set({ items: [] }),
+      setHasHydrated: (hasHydrated: boolean) => set({ hasHydrated }),
       getTotalPrice: () => {
         return get().items.reduce((sum, item) => sum + item.price * item.quantity, 0);
       },
@@ -60,6 +64,11 @@ export const useCartStore = create<CartStore>()(
     }),
     {
       name: 'cart-storage',
+      skipHydration: true,
+      storage: createJSONStorage(() => (typeof window !== 'undefined' ? localStorage : undefined)),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     },
   ),
 );
