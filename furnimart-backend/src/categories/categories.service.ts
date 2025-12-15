@@ -8,10 +8,10 @@ export class CategoriesService {
   constructor(@InjectModel(Category.name) private model: Model<Category>) {}
 
   findAll() {
-    return this.model.find();
+    return this.model.find({ isActive: true });
   }
 
-  create(body: any) {
+  create(body: Partial<Category>) {
     return this.model.create(body);
   }
 }

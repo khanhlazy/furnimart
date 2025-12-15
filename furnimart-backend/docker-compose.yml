@@ -1,0 +1,24 @@
+version: '3.9'
+services:
+  mongo:
+    image: mongo:7
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+  api:
+    build: .
+    restart: always
+    environment:
+      - PORT=5000
+      - MONGODB_URI=mongodb://mongo:27017/furnimart
+      - JWT_SECRET=supersecretchangeme
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./uploads:/app/uploads
+    depends_on:
+      - mongo
+volumes:
+  mongo_data:

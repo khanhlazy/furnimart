@@ -1,13 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { CreateProductDto } from './dto/create-product.dto';
+import { ProductQueryDto } from './dto/product-query.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './schemas/product.schema';
 
 @Injectable()
 export class ProductsService {
   constructor(@InjectModel(Product.name) private model: Model<Product>) {}
 
-  async findAll(query: any) {
+  async findAll(query: ProductQueryDto) {
     const { category, search, page = 1, limit = 12 } = query;
     const filter: any = { isActive: true };
 
@@ -29,7 +32,7 @@ export class ProductsService {
     return product;
   }
 
-  async create(body: any, file?: Express.Multer.File) {
+  async create(body: CreateProductDto, file?: Express.Multer.File) {
     return this.model.create({
       ...body,
       image: file ? `/uploads/${file.filename}` : null,
@@ -37,7 +40,7 @@ export class ProductsService {
     });
   }
 
-  async update(id: string, body: any, file?: Express.Multer.File) {
+  async update(id: string, body: UpdateProductDto, file?: Express.Multer.File) {
     const product = await this.model.findByIdAndUpdate(
       id,
       { ...body, ...(file && { image: `/uploads/${file.filename}` }) },
