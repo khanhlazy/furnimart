@@ -5,7 +5,6 @@
   "scripts": {
     "start": "node dist/main.js",
     "build": "tsc -p tsconfig.json",
-    "start:dev": "ts-node -r tsconfig-paths/register src/main.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.1",
