@@ -22,6 +22,13 @@ NestJS service powering the multi-role FurniMart experience (customers, staff, m
    ```
 4. The API listens on `http://localhost:${PORT:-5000}` with a `/api` prefix (e.g. `GET /api/products`).
 
+### Seed sample data
+Populate MongoDB with demo users, products, orders, and reviews. The script wipes the related collections before inserting:
+
+```bash
+npm run seed
+```
+
 ## Production build
 ```bash
 npm run build
