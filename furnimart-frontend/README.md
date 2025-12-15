@@ -14,7 +14,9 @@ Next.js 13 static prototype for the FurniMart multi-role experience. It illustra
 3. Open `http://localhost:3000` in your browser.
 
 ## Linking to the API
-Set `NEXT_PUBLIC_API_BASE` in a `.env.local` file if you want to point components at a running backend (defaults to `http://localhost:5000/api`).
+Copy `.env.local.example` to `.env.local` to configure the API base (defaults to `http://localhost:5000/api`).
+
+When using the root-level `docker-compose.yml`, the frontend will rebuild against the local API automatically.
 
 ## Production build
 ```bash

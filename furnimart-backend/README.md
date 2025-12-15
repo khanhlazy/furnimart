@@ -29,6 +29,15 @@ Populate MongoDB with demo users, products, orders, and reviews. The script wipe
 npm run seed
 ```
 
+## Docker compose (full stack)
+A root-level `docker-compose.yml` wires MongoDB, this API, and the Next.js frontend together for local development or VS Code Dev Containers:
+
+```bash
+docker compose up --build
+```
+
+Environment variables can be adjusted by creating a `.env` next to the compose file or editing the defaults in `.env.example`.
+
 ## Production build
 ```bash
 npm run build
