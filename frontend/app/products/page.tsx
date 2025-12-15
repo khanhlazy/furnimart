@@ -55,24 +55,25 @@ export default function ProductsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="page-shell">
       <Navbar />
 
       {/* Hero */}
-      <div className="bg-gradient-to-r from-primary to-gray-800 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold mb-2">Cửa hàng nội thất</h1>
-          <p className="text-gray-200">Khám phá bộ sưu tập nội thất hoàn chỉnh của chúng tôi</p>
+      <div className="hero-banner">
+        <div className="section-shell relative z-10">
+          <p className="pill mb-4 inline-flex">Khám phá ngay</p>
+          <h1 className="text-4xl md:text-5xl font-bold mb-3">Cửa hàng nội thất</h1>
+          <p className="text-gray-100 text-lg max-w-2xl">Khám phá bộ sưu tập nội thất hoàn chỉnh của chúng tôi</p>
         </div>
       </div>
 
-      <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="section-shell flex-1 w-full py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
           {/* Filters */}
           <aside
             className={`${
               showFilters ? 'block' : 'hidden'
-            } lg:block lg:col-span-1 bg-white p-6 rounded-xl shadow-lg h-fit`}
+            } lg:block lg:col-span-1 panel h-fit glass-card`}
           >
             <div className="flex justify-between items-center lg:hidden mb-4">
               <h2 className="text-xl font-bold text-primary">Bộ lọc</h2>
@@ -84,14 +85,14 @@ export default function ProductsPage() {
             <div className="space-y-6">
               {/* Search */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">Tìm kiếm</label>
+                <label className="form-label">Tìm kiếm</label>
                 <div className="relative">
                   <input
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Tìm sản phẩm..."
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary transition"
+                    className="input-field pr-10"
                   />
                   <FiSearch className="absolute right-3 top-3 text-gray-400" />
                 </div>
@@ -99,7 +100,7 @@ export default function ProductsPage() {
 
               {/* Category */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">Danh mục</label>
+                <label className="form-label">Danh mục</label>
                 <div className="space-y-2">
                   <button
                     onClick={() => setCategory('')}
@@ -137,7 +138,7 @@ export default function ProductsPage() {
 
               {/* Price Range */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">Giá (VNĐ)</label>
+                <label className="form-label">Giá (VNĐ)</label>
                 <div className="space-y-3">
                   <div>
                     <input
@@ -145,7 +146,7 @@ export default function ProductsPage() {
                       value={minPrice}
                       onChange={(e) => setMinPrice(parseInt(e.target.value) || 0)}
                       placeholder="Giá tối thiểu"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                      className="input-field text-sm"
                     />
                   </div>
                   <div>
@@ -154,7 +155,7 @@ export default function ProductsPage() {
                       value={maxPrice}
                       onChange={(e) => setMaxPrice(parseInt(e.target.value) || 100000000)}
                       placeholder="Giá tối đa"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                      className="input-field text-sm"
                     />
                   </div>
                 </div>
@@ -168,7 +169,7 @@ export default function ProductsPage() {
                   setMinPrice(0);
                   setMaxPrice(100000000);
                 }}
-                className="w-full px-4 py-2 border border-secondary text-secondary rounded-lg hover:bg-secondary hover:text-white transition font-semibold"
+                className="btn-secondary w-full"
               >
                 Xóa bộ lọc
               </button>
@@ -180,7 +181,7 @@ export default function ProductsPage() {
             {/* Mobile Filter Toggle */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="lg:hidden mb-4 w-full flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="lg:hidden mb-4 w-full flex items-center justify-center gap-2 px-4 py-2 panel"
             >
               <FiFilter /> Bộ lọc
             </button>
@@ -193,10 +194,7 @@ export default function ProductsPage() {
             ) : products.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {products.map((product) => (
-                  <div
-                    key={product._id}
-                    className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition transform hover:-translate-y-1"
-                  >
+                  <div key={product._id} className="product-card">
                     {/* Image */}
                     <Link href={`/products/${product._id}`}>
                       <div className="relative bg-gray-200 h-72 overflow-hidden">
@@ -263,14 +261,14 @@ export default function ProductsPage() {
                       <div className="flex gap-2">
                         <Link
                           href={`/products/${product._id}`}
-                          className="flex-1 px-3 py-2 border border-secondary text-secondary rounded-lg hover:bg-secondary hover:text-white transition text-center text-sm font-semibold"
+                          className="btn-secondary flex-1 text-center text-sm"
                         >
                           Chi tiết
                         </Link>
                         <button
                           onClick={() => handleAddToCart(product)}
                           disabled={product.stock <= 0}
-                          className="flex-1 px-3 py-2 bg-secondary text-white rounded-lg hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-1 text-sm font-semibold"
+                          className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                         >
                           <FiShoppingCart size={16} /> Thêm
                         </button>

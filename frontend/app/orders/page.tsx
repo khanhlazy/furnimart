@@ -5,6 +5,8 @@ import { useAuthStore } from '@store/authStore';
 import { orderService } from '@services/orderService';
 import Link from 'next/link';
 import { FiArrowRight } from 'react-icons/fi';
+import Navbar from '@components/Navbar';
+import Footer from '@components/Footer';
 
 interface Order {
   _id: string;
@@ -35,48 +37,57 @@ export default function OrdersPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-500 mb-4">Vui lòng đăng nhập để xem đơn hàng</p>
-          <Link href="/auth/login" className="text-secondary hover:underline">
-            Đăng nhập ngay
-          </Link>
+      <div className="page-shell">
+        <Navbar />
+        <div className="flex-1 section-shell flex items-center justify-center">
+          <div className="empty-state">
+            <p className="text-gray-600 mb-4">Vui lòng đăng nhập để xem đơn hàng</p>
+            <Link href="/auth/login" className="inline-link">
+              Đăng nhập ngay
+            </Link>
+          </div>
         </div>
+        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-primary">Đơn hàng của tôi</h1>
-          <Link href="/products" className="text-secondary hover:text-primary">
-            Tiếp tục mua sắm
+    <div className="page-shell">
+      <Navbar />
+
+      <header className="hero-banner">
+        <div className="section-shell relative z-10 flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <p className="pill mb-3 inline-flex">Đơn hàng</p>
+            <h1 className="text-3xl font-bold text-white">Đơn hàng của tôi</h1>
+            <p className="text-gray-100/90">Theo dõi trạng thái giao hàng và chi tiết hóa đơn</p>
+          </div>
+          <Link href="/products" className="inline-flex items-center gap-2 text-white hover:text-white/90">
+            Tiếp tục mua sắm <FiArrowRight />
           </Link>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="section-shell py-10 flex-1">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondary"></div>
           </div>
         ) : orders.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-12 text-center">
-            <p className="text-gray-500 text-lg mb-4">Bạn chưa có đơn hàng nào</p>
-            <Link href="/products" className="text-secondary hover:underline">
+          <div className="empty-state">
+            <p className="text-gray-600 text-lg mb-4">Bạn chưa có đơn hàng nào</p>
+            <Link href="/products" className="inline-link">
               Bắt đầu mua sắm ngay
             </Link>
           </div>
         ) : (
           <div className="space-y-6">
             {orders.map((order) => (
-              <div key={order._id} className="bg-white rounded-lg shadow hover:shadow-lg transition p-6">
+              <div key={order._id} className="panel hover:shadow-2xl transition">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-4 mb-2">
+                  <div className="flex-1 space-y-3">
+                    <div className="flex items-center gap-4">
                       <h3 className="text-lg font-semibold text-gray-900">
                         Đơn hàng #{order._id.slice(-8).toUpperCase()}
                       </h3>
@@ -89,7 +100,7 @@ export default function OrdersPage() {
                       </span>
                     </div>
 
-                    <p className="text-sm text-gray-600 mb-2">
+                    <p className="text-sm text-gray-600">
                       Ngày đặt: {new Date(order.createdAt).toLocaleDateString('vi-VN')}
                     </p>
 
@@ -98,13 +109,13 @@ export default function OrdersPage() {
                     </div>
                   </div>
 
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-secondary mb-4">
+                  <div className="text-right space-y-3">
+                    <p className="text-2xl font-bold text-secondary">
                       {order.totalPrice.toLocaleString('vi-VN')} VNĐ
                     </p>
                     <Link
                       href={`/orders/${order._id}`}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-secondary text-white rounded hover:bg-yellow-600 transition"
+                      className="btn-primary inline-flex items-center gap-2"
                     >
                       Chi tiết <FiArrowRight />
                     </Link>
@@ -115,6 +126,8 @@ export default function OrdersPage() {
           </div>
         )}
       </div>
+
+      <Footer />
     </div>
   );
 }

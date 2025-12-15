@@ -27,7 +27,7 @@ export default function Home() {
   const products = response?.data || [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f8fafc] via-[#fef6e4] to-[#fff] flex flex-col font-sans">
+    <div className="page-shell font-sans">
       <Navbar />
 
       {/* Hero Section */}
