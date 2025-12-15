@@ -37,48 +37,6 @@ body {
 .app-body {
   background: transparent;
 }
-
-.page-shell {
-  @apply min-h-screen flex flex-col text-slate-900;
-  background: radial-gradient(circle at 20% 20%, rgba(234, 179, 8, 0.06), transparent 35%),
-    radial-gradient(circle at 80% 0%, rgba(245, 158, 66, 0.1), transparent 40%),
-    linear-gradient(135deg, #f8fafc 0%, #fef6e4 100%);
-}
-
-.section-shell {
-  @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
-}
-
-.hero-banner {
-  @apply relative overflow-hidden text-white py-16 shadow-xl;
-  background: linear-gradient(120deg, #0f172a, #1e293b 60%, #f59e42);
-}
-
-.hero-banner::after,
-.hero-banner::before {
-  content: '';
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(60px);
-  opacity: 0.25;
-}
-
-.hero-banner::before {
-  width: 320px;
-  height: 320px;
-  background: #fbbf24;
-  top: -60px;
-  left: -40px;
-}
-
-.hero-banner::after {
-  width: 420px;
-  height: 420px;
-  background: #f97316;
-  bottom: -120px;
-  right: -60px;
-}
-
 a {
   transition: color 0.2s ease;
 }
@@ -119,31 +77,6 @@ input[type='email'],
 input[type='password'],
 input[type='number'] {
   @apply w-full rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm focus:border-secondary focus:ring-2 focus:ring-secondary/30 outline-none transition;
-}
-
-.form-label {
-  @apply block text-sm font-semibold text-gray-700 mb-2;
-}
-
-.surface-card {
-  @apply bg-white rounded-2xl shadow-lg border border-gray-100;
-  box-shadow: var(--shadow-soft);
-}
-
-.panel {
-  @apply surface-card p-6;
-}
-
-.empty-state {
-  @apply surface-card text-center p-12;
-}
-
-.pill {
-  @apply inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold bg-secondary/10 text-secondary;
-}
-
-.inline-link {
-  @apply text-secondary font-semibold hover:text-primary transition;
 }
 
 .card {
