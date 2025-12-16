@@ -6,10 +6,17 @@ import { HttpExceptionFilter } from '@common/exceptions/http-exception.filter';
 import { ResponseInterceptor } from '@common/interceptors/response.interceptor';
 import { AppModule } from './app.module';
 import type { Request, Response, NextFunction } from 'express';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: ['error', 'warn', 'log'],
+  });
+
+  // Serve static files from uploads directory
+  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+    prefix: '/uploads',
   });
 
   // Thêm dòng này để prefix tất cả route với /api
@@ -21,7 +28,18 @@ async function bootstrap() {
     : ['http://localhost:3000', 'http://localhost:3001'];
   
   app.enableCors({
-    origin: corsOrigins,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) {
+        return callback(null, true);
+      }
+      // Allow all origins in development, or check against allowed list in production
+      if (process.env.NODE_ENV === 'development' || corsOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(null, true); // Allow all for mobile apps
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],

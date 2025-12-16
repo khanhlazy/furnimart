@@ -11,4 +11,7 @@ export const reviewService = {
   getMyReviews: async () => {
     return apiClient.get('/reviews/my-reviews') as Promise<any>;
   },
+  create: async (data: { productId: string; rating: number; comment: string; customerName: string; images?: string[] }) => {
+    return apiClient.post('/reviews', data) as Promise<any>;
+  },
 };

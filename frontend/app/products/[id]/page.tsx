@@ -295,13 +295,24 @@ export default function ProductDetailPage() {
         {/* Reviews */}
         <div className="panel">
           <div className="flex items-center justify-between gap-4 mb-6">
-            <h2 className="text-2xl font-bold text-primary">Đánh giá từ khách hàng</h2>
-            {user && (
+            <div>
+              <h2 className="text-2xl font-bold text-primary">Đánh giá từ khách hàng</h2>
+              {reviews.length > 0 && (
+                <p className="text-sm text-gray-600 mt-1">
+                  {reviews.length} đánh giá • 
+                  {' '}
+                  {(
+                    reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+                  ).toFixed(1)} / 5.0 ⭐
+                </p>
+              )}
+            </div>
+            {user && user.role === 'customer' && (
               <Link
                 href={`/reviews/create?productId=${productId}`}
-                className="inline-link flex items-center gap-2"
+                className="btn-primary"
               >
-                Viết đánh giá của bạn
+                Viết đánh giá
               </Link>
             )}
           </div>
@@ -311,22 +322,55 @@ export default function ProductDetailPage() {
               {reviews.map((review) => (
                 <div key={review._id} className="border-b pb-6 last:border-b-0 last:pb-0">
                   <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-semibold text-gray-900">{review.customerName}</h4>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                        <span className="text-primary font-bold">
+                          {review.customerName?.charAt(0)?.toUpperCase() || 'K'}
+                        </span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900">{review.customerName || 'Khách hàng'}</h4>
+                        <div className="flex text-yellow-400 text-sm">
+                          {[...Array(5)].map((_, i) => (
+                            <span key={i}>{i < review.rating ? '★' : '☆'}</span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                     <span className="text-sm text-gray-500">
-                      {new Date(review.createdAt).toLocaleDateString('vi-VN')}
+                      {new Date(review.createdAt).toLocaleDateString('vi-VN', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
                     </span>
                   </div>
-                  <div className="flex text-yellow-400 mb-2">
-                    {[...Array(5)].map((_, i) => (
-                      <span key={i}>{i < review.rating ? '★' : '☆'}</span>
-                    ))}
-                  </div>
-                  <p className="text-gray-600">{review.comment}</p>
+                  <p className="text-gray-600 mb-3 mt-3">{review.comment}</p>
+                  {review.images && review.images.length > 0 && (
+                    <div className="grid grid-cols-4 gap-2 mt-3">
+                      {review.images.map((img, idx) => (
+                        <img
+                          key={idx}
+                          src={img}
+                          alt={`Review image ${idx + 1}`}
+                          className="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                          onClick={() => window.open(img, '_blank')}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-gray-500 text-center py-6">Chưa có đánh giá nào</p>
+            <div className="text-center py-12">
+              <p className="text-gray-500 mb-4">Chưa có đánh giá nào</p>
+              {user && user.role === 'customer' && (
+                <Link href={`/reviews/create?productId=${productId}`} className="btn-primary">
+                  Viết đánh giá đầu tiên
+                </Link>
+              )}
+            </div>
           )}
         </div>
       </div>

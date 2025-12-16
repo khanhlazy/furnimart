@@ -23,6 +23,25 @@ export class User {
   @Prop()
   address?: string;
 
+  @Prop({ type: [{
+    name: String,
+    phone: String,
+    street: String,
+    ward: String,
+    district: String,
+    city: String,
+    isDefault: { type: Boolean, default: false },
+  }], default: [] })
+  addresses?: Array<{
+    name: string;
+    phone: string;
+    street: string;
+    ward: string;
+    district: string;
+    city: string;
+    isDefault?: boolean;
+  }>;
+
   @Prop({ default: true })
   isActive!: boolean;
 }

@@ -4,12 +4,13 @@
  */
 
 export interface User {
-  id: string;
+  _id: string; // Changed from id
   email: string;
   name: string;
   role: 'admin' | 'manager' | 'employee' | 'shipper' | 'customer';
   phone?: string;
-  address?: string;
+  address?: string; // Legacy field, use addresses[] instead
+  addresses?: Address[]; // Added to match backend
   isActive: boolean;
 }
 
@@ -60,17 +61,15 @@ export interface ProductForm {
 
 export interface Order {
   _id: string;
-  userId?: string;
-  customerId?: string;
-  items: OrderItem[] | Array<{ productId: string; productName: string; quantity: number; price?: number }>;
-  total?: number;
-  totalPrice?: number;
-  totalDiscount?: number;
-  status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded' | string;
-  shippingAddress?: Address | string;
+  customerId: string; // Standardized (removed userId)
+  items: OrderItem[];
+  shippingAddress: Address | string; // Required, not optional
   phone?: string;
+  totalPrice: number; // Required, not optional
+  totalDiscount?: number;
+  status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
   paymentMethod: 'cod' | 'stripe' | 'momo' | string;
-  isPaid?: boolean;
+  isPaid: boolean; // Required, not optional (default: false)
   notes?: string;
   shipperId?: string;
   trackingNumber?: string;
@@ -81,6 +80,9 @@ export interface Order {
   cancelReason?: string;
   createdAt: string;
   updatedAt?: string;
+  // Legacy fields (deprecated)
+  userId?: string;
+  total?: number;
 }
 
 export interface OrderItem {
@@ -91,12 +93,18 @@ export interface OrderItem {
 }
 
 export interface Address {
-  street: string;
-  city: string;
-  province: string;
-  zipCode: string;
+  _id?: string; // Added
+  name: string; // Changed from recipientName
   phone: string;
-  recipientName: string;
+  street: string;
+  ward: string; // Added
+  district: string; // Changed from province
+  city: string;
+  isDefault?: boolean; // Added
+  // Legacy fields (deprecated, use above fields instead)
+  province?: string;
+  zipCode?: string;
+  recipientName?: string;
 }
 
 export interface Category {

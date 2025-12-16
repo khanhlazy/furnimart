@@ -14,6 +14,7 @@ import { ChatModule } from './modules/chat/chat.module';
 import { WarehouseModule } from './modules/warehouse/warehouse.module';
 import { DisputesModule } from './modules/disputes/disputes.module';
 import { SettingsModule } from './modules/settings/settings.module';
+import { UploadModule } from './modules/upload/upload.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { SettingsModule } from './modules/settings/settings.module';
     WarehouseModule,
     DisputesModule,
     SettingsModule,
+    UploadModule,
   ],
   controllers: [AppController],
 })

@@ -9,14 +9,17 @@ import { useRequireAuth } from '@hooks/useRequireAuth';
 import { toast } from 'react-toastify';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { FiPlus, FiEdit, FiTrash2 } from 'react-icons/fi';
+import { FiPlus, FiEdit, FiTrash2, FiImage, FiX } from 'react-icons/fi';
 import { ProductForm } from '@types';
+import { uploadService } from '@services/uploadService';
 
 export default function AdminProductsPage() {
   const { user, isLoading } = useRequireAuth({ requiredRole: 'admin' });
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [images, setImages] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
   const { register, handleSubmit, reset, formState: { errors } } = useForm<ProductForm>();
 
   const { data: products = [], error: productsError, isLoading: productsLoading } = useQuery(
@@ -44,6 +47,7 @@ export default function AdminProductsPage() {
         queryClient.invalidateQueries(['products']);
         toast.success('Tạo sản phẩm thành công');
         setIsModalOpen(false);
+        setImages([]);
         reset();
       },
     }
@@ -58,6 +62,7 @@ export default function AdminProductsPage() {
         toast.success('Cập nhật sản phẩm thành công');
         setIsModalOpen(false);
         setEditingProduct(null);
+        setImages([]);
         reset();
       },
     }
@@ -89,16 +94,62 @@ export default function AdminProductsPage() {
     return null;
   }
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+    try {
+      const fileArray = Array.from(files);
+      const uploadResults = await uploadService.uploadImages(fileArray);
+      
+      // Ensure uploadResults is always an array
+      const resultsArray = Array.isArray(uploadResults) ? uploadResults : [uploadResults];
+      
+      const newImageUrls = resultsArray.map((result) => {
+        // Convert relative URL to absolute URL
+        if (result?.url?.startsWith('/')) {
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+          // Remove /api if present since uploads is served from root
+          const baseUrl = apiUrl.replace('/api', '');
+          return `${baseUrl}${result.url}`;
+        }
+        return result?.url || '';
+      }).filter(url => url); // Filter out empty URLs
+      
+      if (newImageUrls.length > 0) {
+        setImages((prev) => [...prev, ...newImageUrls]);
+        toast.success(`Đã upload ${newImageUrls.length} ảnh thành công`);
+      } else {
+        toast.error('Không có ảnh nào được upload thành công');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Upload ảnh thất bại');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const onSubmit = (data: ProductForm) => {
+    const submitData = {
+      ...data,
+      images: images.length > 0 ? images : undefined,
+    };
+
     if (editingProduct) {
-      updateMutation.mutate({ id: editingProduct._id, data });
+      updateMutation.mutate({ id: editingProduct._id, data: submitData });
     } else {
-      createMutation.mutate(data);
+      createMutation.mutate(submitData as ProductForm);
     }
   };
 
   const handleEdit = (product: any) => {
     setEditingProduct(product);
+    setImages(product.images || []);
     reset({
       name: product.name,
       description: product.description,
@@ -129,6 +180,7 @@ export default function AdminProductsPage() {
           <button
             onClick={() => {
               setEditingProduct(null);
+              setImages([]);
               reset();
               setIsModalOpen(true);
             }}
@@ -251,6 +303,52 @@ export default function AdminProductsPage() {
                   </select>
                 </div>
 
+                {/* Image Upload */}
+                <div>
+                  <label className="form-label">Hình ảnh sản phẩm</label>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <label className="btn-secondary cursor-pointer">
+                        <FiImage className="inline mr-2" />
+                        {uploading ? 'Đang upload...' : 'Chọn ảnh'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={handleImageUpload}
+                          disabled={uploading}
+                          className="hidden"
+                        />
+                      </label>
+                      <span className="text-sm text-gray-500">
+                        Tối đa 10 ảnh, mỗi ảnh tối đa 5MB
+                      </span>
+                    </div>
+
+                    {/* Image Preview */}
+                    {images.length > 0 && (
+                      <div className="grid grid-cols-4 gap-3 mt-3">
+                        {images.map((img, index) => (
+                          <div key={index} className="relative group">
+                            <img
+                              src={img}
+                              alt={`Preview ${index + 1}`}
+                              className="w-full h-24 object-cover rounded-lg border"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeImage(index)}
+                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <FiX />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 <div className="flex gap-4">
                   <button type="submit" className="btn-primary">
                     {editingProduct ? 'Cập nhật' : 'Tạo'}
@@ -260,6 +358,7 @@ export default function AdminProductsPage() {
                     onClick={() => {
                       setIsModalOpen(false);
                       setEditingProduct(null);
+                      setImages([]);
                       reset();
                     }}
                     className="btn-secondary"

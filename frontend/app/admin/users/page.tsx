@@ -239,7 +239,7 @@ export default function AdminUsersPage() {
                       </button>
                       <button
                         onClick={() => {
-                          if (userItem._id === user?.id) {
+                          if (userItem._id === user?._id) {
                             toast.error('Không thể xóa chính tài khoản của bạn');
                             return;
                           }
@@ -249,7 +249,7 @@ export default function AdminUsersPage() {
                         }}
                         className="text-red-500 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Xóa người dùng"
-                        disabled={userItem._id === user?.id}
+                        disabled={userItem._id === user?._id}
                       >
                         <FiTrash2 />
                       </button>

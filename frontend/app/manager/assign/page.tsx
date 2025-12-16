@@ -189,7 +189,7 @@ export default function ManagerAssignPage() {
                       >
                         <option value="">-- Chọn shipper --</option>
                         {shippers.map((shipper: any) => (
-                          <option key={shipper.id} value={shipper.id}>
+                          <option key={shipper._id || shipper.id} value={shipper._id || shipper.id}>
                             {shipper.name} - {shipper.phone || 'N/A'}
                           </option>
                         ))}

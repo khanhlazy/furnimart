@@ -80,7 +80,7 @@ export default function ChatBox({ chat, onClose, onMessageSent }: ChatBoxProps) 
           </div>
         ) : (
           messages.map((msg, idx) => {
-            const isOwnMessage = msg.senderId === user?.id;
+            const isOwnMessage = msg.senderId === user?._id;
             return (
               <div
                 key={idx}

@@ -2,12 +2,22 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 export interface User {
-  id: string;
+  _id: string; // Changed from id to match backend
   email: string;
   name: string;
   role: string;
   phone?: string;
-  address?: string;
+  address?: string; // Legacy field
+  addresses?: Array<{ // Added to match backend
+    _id?: string;
+    name: string;
+    phone: string;
+    street: string;
+    ward: string;
+    district: string;
+    city: string;
+    isDefault?: boolean;
+  }>;
   isActive?: boolean;
 }
 
